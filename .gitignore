@@ -1,8 +1,12 @@
-## ASP.NET Core & Blazor - Recursive ignores
-**/bin/
+## ASP.NET Core & Blazor - Recursive ignores 
 **/obj/
+**/bin/
 **/net8.0/
-**/*.dll
+**/Debug/
+*.dll
+*.cache
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
 **/*.exe
 **/*.log
 **/*.tmp
@@ -16,6 +20,19 @@
 .idea/
 *.sln.docstates
 *.DotSettings.user
+
+ProjectName.AdminApp/bin/
+ProjectName.AdminApp/obj/
+ProjectName.Application/bin/
+ProjectName.Application/obj/
+ProjectName.ClientApp/bin/
+ProjectName.ClientApp/obj/
+ProjectName.Domain/bin/
+ProjectName.Domain/obj/
+ProjectName.Infrastructure/bin/
+ProjectName.Infrastructure/obj/
+ProjectName.Utilities/bin/
+ProjectName.Utilities/obj/
 
 # Blazor specifics
 **/wwwroot/
@@ -53,17 +70,4 @@ docker-compose.override.yml
 *.orig
 *.rej
 
-# Custom Libraries (if separate projects/folders)
-**/ProjectName.AdminApp/bin/
-**/ProjectName.AdminApp/obj/
-**/ProjectName.Application/bin/
-**/ProjectName.Application/obj/
-**/ProjectName.ClientApp/bin/
-**/ProjectName.ClientApp/obj/
-**/ProjectName.Infrastructure/bin/
-**/ProjectName.Infrastructure/obj/
-**/ProjectName.Utilities/bin/
-**/ProjectName.Utilities/obj/
-**/ProjectName.Domain/bin/
-**/ProjectName.Domain/obj/
 
