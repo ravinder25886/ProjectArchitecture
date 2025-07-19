@@ -1,8 +1,12 @@
 ## ASP.NET Core & Blazor - Recursive ignores
-**/bin/
 **/obj/
+**/bin/
 **/net8.0/
-**/*.dll
+**/Debug/
+*.dll
+*.cache
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
 **/*.exe
 **/*.log
 **/*.tmp
