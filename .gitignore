@@ -1,4 +1,4 @@
-## ASP.NET Core & Blazor - Recursive ignores
+## ASP.NET Core & Blazor - Recursive ignores 
 **/obj/
 **/bin/
 **/net8.0/
