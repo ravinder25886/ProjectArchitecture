@@ -1,61 +1,69 @@
-## ASP.NET Core & Blazor
-bin/
-obj/
-*.dll
-*.exe
-*.user
-*.suo
-*.swp
-*.tmp
-*.log
-*.vspscc
-*.vssscc
+## ASP.NET Core & Blazor - Recursive ignores
+**/bin/
+**/obj/
+**/net8.0/
+**/*.dll
+**/*.exe
+**/*.log
+**/*.tmp
+**/*.user
+**/*.suo
+**/*.swp
+**/*.pdb
+**/*.cache
 .vs/
 .vscode/
 .idea/
 *.sln.docstates
 *.DotSettings.user
 
-# Razor & Blazor specific
-wwwroot/
-*.g.cs
-*.g.i.cs
+# Blazor specifics
+**/wwwroot/
+**/*.g.cs
+**/*.g.i.cs
 Generated/
-Client/bin/
-Client/obj/
-Server/bin/
-Server/obj/
 
-# User secrets & config
+# Config & secrets
 secrets.json
 *.pfx
 *.key
 *.publishsettings
 appsettings.Development.json
 appsettings.Local.json
+.env*
 .env
-.env.*
 
-# Entity Framework (if used)
-Migrations/
+# Entity Framework
+**/Migrations/
 
-# Test and coverage
+# Tests & coverage
 TestResults/
 coverage/
 
-# Node & frontend (if SPA elements or npm packages are used)
+# Node / SPA
 node_modules/
 dist/
 build/
 
-# Docker artifacts
+# Docker
 *.pid
 docker-compose.override.yml
 
-# Temporary or backup files
+# Temporary/backups
 *.orig
 *.rej
 
 # Custom Libraries (if separate projects/folders)
-**/YourLibName/bin/
-**/YourLibName/obj/
+**/ProjectName.AdminApp/bin/
+**/ProjectName.AdminApp/obj/
+**/ProjectName.Application/bin/
+**/ProjectName.Application/obj/
+**/ProjectName.ClientApp/bin/
+**/ProjectName.ClientApp/obj/
+**/ProjectName.Infrastructure/bin/
+**/ProjectName.Infrastructure/obj/
+**/ProjectName.Utilities/bin/
+**/ProjectName.Utilities/obj/
+**/ProjectName.Domain/bin/
+**/ProjectName.Domain/obj/
+

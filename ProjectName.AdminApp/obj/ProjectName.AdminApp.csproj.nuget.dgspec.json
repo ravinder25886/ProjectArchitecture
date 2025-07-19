@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj": {}
+    "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj": {}
   },
   "projects": {
-    "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj": {
+    "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj",
+        "projectUniqueName": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj",
         "projectName": "ProjectName.AdminApp",
-        "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj",
+        "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.AdminApp\\ProjectName.AdminApp.csproj",
         "packagesPath": "C:\\Users\\Tanmay\\.nuget\\packages\\",
-        "outputPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.AdminApp\\obj\\",
+        "outputPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.AdminApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -70,7 +70,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

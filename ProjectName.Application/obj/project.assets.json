@@ -678,6 +678,9 @@
       "ProjectName.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Dapper": "2.1.66"
+        },
         "compile": {
           "bin/placeholder/ProjectName.Domain.dll": {}
         },
@@ -692,13 +695,24 @@
           "Dapper": "2.1.66",
           "Microsoft.Data.SqlClient": "6.0.2",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.6",
-          "ProjectName.Domain": "1.0.0"
+          "ProjectName.Domain": "1.0.0",
+          "ProjectName.Utilities": "1.0.0"
         },
         "compile": {
           "bin/placeholder/ProjectName.Infrastructure.dll": {}
         },
         "runtime": {
           "bin/placeholder/ProjectName.Infrastructure.dll": {}
+        }
+      },
+      "ProjectName.Utilities/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/ProjectName.Utilities.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ProjectName.Utilities.dll": {}
         }
       }
     }
@@ -1771,6 +1785,11 @@
       "type": "project",
       "path": "../ProjectName.Infrastructure/ProjectName.Infrastructure.csproj",
       "msbuildProject": "../ProjectName.Infrastructure/ProjectName.Infrastructure.csproj"
+    },
+    "ProjectName.Utilities/1.0.0": {
+      "type": "project",
+      "path": "../ProjectName.Utilities/ProjectName.Utilities.csproj",
+      "msbuildProject": "../ProjectName.Utilities/ProjectName.Utilities.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -1787,11 +1806,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Application\\ProjectName.Application.csproj",
+      "projectUniqueName": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Application\\ProjectName.Application.csproj",
       "projectName": "ProjectName.Application",
-      "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Application\\ProjectName.Application.csproj",
+      "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Application\\ProjectName.Application.csproj",
       "packagesPath": "C:\\Users\\Tanmay\\.nuget\\packages\\",
-      "outputPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Application\\obj\\",
+      "outputPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -1814,11 +1833,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Domain\\ProjectName.Domain.csproj": {
-              "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Domain\\ProjectName.Domain.csproj"
+            "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Domain\\ProjectName.Domain.csproj": {
+              "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Domain\\ProjectName.Domain.csproj"
             },
-            "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Infrastructure\\ProjectName.Infrastructure.csproj": {
-              "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.Infrastructure\\ProjectName.Infrastructure.csproj"
+            "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Infrastructure\\ProjectName.Infrastructure.csproj": {
+              "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.Infrastructure\\ProjectName.Infrastructure.csproj"
             }
           }
         }
@@ -1854,7 +1873,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
