@@ -19,8 +19,6 @@ public class LoginRepository : ILoginRepository
 
     public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
     {
-        const string query = @"SELECT Id, Email, FullName FROM Users WHERE Email = @Email AND Password = @Password";
-
         using var connection = _context.CreateConnection();
         var parameters = new DynamicParameters();
         parameters.Add("@UserName", loginRequest.UserName, DbType.String);

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj": {}
+    "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj": {}
   },
   "projects": {
-    "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj": {
+    "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj",
+        "projectUniqueName": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj",
         "projectName": "ProjectName.ClientApp",
-        "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj",
+        "projectPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.ClientApp\\ProjectName.ClientApp.csproj",
         "packagesPath": "C:\\Users\\Tanmay\\.nuget\\packages\\",
-        "outputPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitecture\\ProjectArchitecture\\ProjectName.ClientApp\\obj\\",
+        "outputPath": "D:\\testsite\\API-AZ-2024\\ProjectArchitectureGit\\ProjectName.ClientApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -70,7 +70,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
