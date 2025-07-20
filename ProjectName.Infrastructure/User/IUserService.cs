@@ -1,17 +1,17 @@
-using ProjectName.Domain.Account;
+using ProjectName.Models.Account;
 using ProjectName.Utilities.BaseResponseModel;
 
-namespace ProjectName.Infrastructure.User;
+namespace ProjectName.DataAccess.User;
 
 //Add CRUD methods for dataabse
 public interface IUserService
 {  // Create
-    Task<BaseResponse<int>> CreateUserAsync(UserModel User);
+    public Task<BaseResponse<int>> CreateUserAsync(UserModel user);
     // Read
-    Task<UserModel?> GetUserByIdAsync(int id);
-    Task<BaseResponse<IEnumerable<UserModel>>> GetAllUsersAsync();
+    public Task<UserModel?> GetUserByIdAsync(int id);
+    public Task<BaseResponse<IEnumerable<UserModel>>> GetAllUsersAsync();
     // Update
-    Task<BaseResponse<int>> UpdateUserAsync(UserModel user);
+    public Task<BaseResponse<int>> UpdateUserAsync(UserModel user);
     // Delete
-    Task<BaseResponse<bool>> DeleteUserAsync(int id);
+    public Task<BaseResponse<bool>> DeleteUserAsync(int id);
 }

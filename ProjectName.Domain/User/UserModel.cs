@@ -1,6 +1,6 @@
-using ProjectName.Domain.Dapper;
+using ProjectName.Models.Dapper;
 
-namespace ProjectName.Domain.Account;
+namespace ProjectName.Models.Account;
 public class UserModel:DapperModel
 {
     [IgnoreOnInsert]  // Exclude Id during insert

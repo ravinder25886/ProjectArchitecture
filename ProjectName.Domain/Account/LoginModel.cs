@@ -1,4 +1,4 @@
-namespace ProjectName.Domain.Account;
+namespace ProjectName.Models.Account;
 public class LoginRequest
 {
     public string? UserName { get; set; }

@@ -1,21 +1,15 @@
 
-using ProjectName.Domain.Account;
-using ProjectName.Infrastructure.Account.Login;
+using ProjectName.Models.Account;
+using ProjectName.DataAccess.Account.Login;
 
-namespace ProjectName.Application.Account.Login
+namespace ProjectName.Core.Account.Login;
+
+public class LoginService(ILoginRepository loginRepository) : ILoginService
 {
-    public class LoginService : ILoginService
+    private readonly ILoginRepository _loginRepository = loginRepository;
+
+    public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
     {
-        private readonly ILoginRepository _loginRepository;
-
-        public LoginService(ILoginRepository loginRepository)
-        {
-            _loginRepository = loginRepository;
-        }
-
-        public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
-        {
-           return await _loginRepository.LoginAsync(loginRequest);
-        }
+       return await _loginRepository.LoginAsync(loginRequest);
     }
 }
