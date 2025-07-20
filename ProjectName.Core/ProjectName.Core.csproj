@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ProjectName.Domain\ProjectName.Models.csproj" />
-    <ProjectReference Include="..\ProjectName.Infrastructure\ProjectName.DataAccess.csproj" />
+    <ProjectReference Include="..\ProjectName.DataAccess\ProjectName.DataAccess.csproj" />
+    <ProjectReference Include="..\ProjectName.Models\ProjectName.Models.csproj" />
   </ItemGroup>
 
 </Project>
