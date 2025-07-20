@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.66" />
+    <ProjectReference Include="..\ProjectName.Domain\ProjectName.Models.csproj" />
+    <ProjectReference Include="..\ProjectName.Infrastructure\ProjectName.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

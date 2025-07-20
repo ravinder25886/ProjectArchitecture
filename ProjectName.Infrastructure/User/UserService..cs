@@ -1,12 +1,12 @@
 
 using System.Data;
 using Dapper;
-using ProjectName.Domain.Account;
-using ProjectName.Infrastructure.Connections;
+using ProjectName.Models.Account;
+using ProjectName.DataAccess.Connections;
 using ProjectName.Utilities.BaseResponseModel;
 using ProjectName.Utilities.Constants;
 
-namespace ProjectName.Infrastructure.User;
+namespace ProjectName.DataAccess.User;
 public class UserService(DapperContext context) : BaseRepository(context), IUserService
 {
     public async Task<BaseResponse<int>> CreateUserAsync(UserModel user)

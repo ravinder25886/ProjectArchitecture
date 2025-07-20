@@ -3,24 +3,19 @@ using System.Data;
 
 using Dapper;
 
-using ProjectName.Domain.Account;
-using ProjectName.Infrastructure.Connections;
+using ProjectName.Models.Account;
+using ProjectName.DataAccess.Connections;
 
-namespace ProjectName.Infrastructure.Account.Login;
+namespace ProjectName.DataAccess.Account.Login;
 // Implementation using Dapper or any DB access logic
-public class LoginRepository : ILoginRepository
+public class LoginRepository(DapperContext context) : ILoginRepository
 {
-    private readonly DapperContext _context;
-
-    public LoginRepository(DapperContext context)
-    {
-        _context = context;
-    }
+    private readonly DapperContext _context = context;
 
     public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
     {
         using var connection = _context.CreateConnection();
-        var parameters = new DynamicParameters();
+        DynamicParameters parameters = new DynamicParameters();
         parameters.Add("@UserName", loginRequest.UserName, DbType.String);
         parameters.Add("@Password", loginRequest.Password, DbType.String);
 

@@ -11,11 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Utilities", "ProjectName.Utilities\ProjectName.Utilities.csproj", "{285D4AF4-167B-4157-8CA6-D440EABC5155}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Domain", "ProjectName.Domain\ProjectName.Domain.csproj", "{18408136-C8AC-406B-A9C1-757D70B3D178}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Models", "ProjectName.Domain\ProjectName.Models.csproj", "{18408136-C8AC-406B-A9C1-757D70B3D178}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Infrastructure", "ProjectName.Infrastructure\ProjectName.Infrastructure.csproj", "{AE6E9F84-0A90-445F-B20E-610066F60A89}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.DataAccess", "ProjectName.Infrastructure\ProjectName.DataAccess.csproj", "{AE6E9F84-0A90-445F-B20E-610066F60A89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Application", "ProjectName.Application\ProjectName.Application.csproj", "{506DD4E7-8215-443B-8292-F76FBCC4F214}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Core", "ProjectName.Application\ProjectName.Core.csproj", "{506DD4E7-8215-443B-8292-F76FBCC4F214}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.ClientApp", "ProjectName.ClientApp\ProjectName.ClientApp.csproj", "{5D920D14-06B2-4CFC-B195-1791390C53DC}"
 EndProject

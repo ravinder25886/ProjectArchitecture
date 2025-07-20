@@ -1,7 +1,7 @@
-using ProjectName.Domain.Account;
+using ProjectName.Models.Account;
 
-namespace ProjectName.Application.Account.Login;
+namespace ProjectName.Core.Account.Login;
 public interface ILoginService
 {
-    Task<LoginResponse> LoginAsync(LoginRequest loginRequest);
+    public Task<LoginResponse> LoginAsync(LoginRequest loginRequest);
 }
