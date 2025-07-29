@@ -2,16 +2,11 @@
 using System.Data;
 
 using Dapper;
-
 using ProjectName.DataAccess.Constants;
 using ProjectName.Models.Account;
-using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 using ProjectName.Utilities.Constants;
-
 using RS.Dapper.Utility.Connections;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace ProjectName.DataAccess.User;
 public class UserRepository(DapperContext dapperContext) : IUserRepository
 {

@@ -24,7 +24,8 @@ dotnet_sort_system_directives_first = true            # Puts System namespaces a
 dotnet_separate_import_directive_groups = true        # Adds a blank line between using groups
 csharp_using_directive_placement = outside_namespace:error  # Places using statements outside the namespace (enforced)
 csharp_prefer_simple_using_statement = true:error     # Prefer simplified C# 8 `using` form (with disposal)
-
+# Report unused usings as errors
+dotnet_diagnostic.IDE0005.severity = error
 ##############################
 # 🧬 Code style: var usage
 ##############################

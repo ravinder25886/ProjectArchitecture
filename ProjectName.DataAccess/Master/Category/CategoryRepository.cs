@@ -1,5 +1,4 @@
 using ProjectName.DataAccess.Constants;
-using ProjectName.Models.Account;
 using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 using ProjectName.Utilities.Constants;
