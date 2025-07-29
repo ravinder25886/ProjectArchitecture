@@ -8,14 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Enums\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Dapper.Utility\RS.Dapper.Utility.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.6" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
 </Project>

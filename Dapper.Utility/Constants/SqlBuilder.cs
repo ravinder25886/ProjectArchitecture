@@ -1,13 +1,8 @@
 using System.Reflection;
 
-namespace ProjectName.DataAccess.Constants;
-public enum DatabaseType
-{
-    SqlServer,
-    MySql,
-    PostgreSql
-}
+using RS.Dapper.Utility.Attributes;
 
+namespace RS.Dapper.Utility.Constants;
 public static class SqlBuilder
 {
     /// <summary>
@@ -22,9 +17,12 @@ public static class SqlBuilder
     public static string BuildInsert<T>(T model, string tableName, DatabaseType dbType, string keyColumn = "Id")
     {
         List<PropertyInfo> props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase)
-                        && p.GetValue(model) != null)
-            .ToList();
+    .Where(p =>
+        !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase) &&
+        p.GetValue(model) != null &&
+        !Attribute.IsDefined(p, typeof(IgnoreParamAttribute))  // Exclude [IgnoreParam]
+    )
+    .ToList();
 
         string columns = string.Join(", ", props.Select(p => p.Name));
         string parameters = string.Join(", ", props.Select(p => "@" + p.Name));
@@ -46,9 +44,12 @@ public static class SqlBuilder
     public static string BuildUpdate<T>(T model, string tableName, string keyColumn = "Id")
     {
         List<PropertyInfo> props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase)
-                        && p.GetValue(model) != null)
-            .ToList();
+                .Where(p =>
+                    !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase) &&
+                    p.GetValue(model) != null &&
+                    !Attribute.IsDefined(p, typeof(IgnoreParamAttribute))  // Exclude [IgnoreParam]
+                )
+                .ToList();
 
         string setClause = string.Join(", ", props.Select(p => $"{p.Name} = @{p.Name}"));
 
@@ -79,8 +80,5 @@ public static class SqlBuilder
         return $"SELECT * FROM {tableName};";
     }
 
-    internal static string BuildInsert<T>(T? model, string tableName, global::DatabaseType databaseType, string keyColumn)
-    {
-        throw new NotImplementedException();
-    }
+
 }

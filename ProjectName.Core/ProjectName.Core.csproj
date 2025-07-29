@@ -11,4 +11,12 @@
     <ProjectReference Include="..\ProjectName.Models\ProjectName.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Account\User\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+  </ItemGroup>
+
 </Project>

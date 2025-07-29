@@ -10,7 +10,7 @@ public class BaseResponse<TResponse> : IErrorResponse
         Errors = new List<string>();
     }
 
-    public TResponse Data { get; set; }
+    public TResponse? Data { get; set; }
     //Error Response
     public bool IsSuccess { get; set; }
     public int StatusCode { get; set; } = 200;
@@ -19,5 +19,19 @@ public class BaseResponse<TResponse> : IErrorResponse
     public string CustomErrorMessage { get; set; }
     public string Message { get; set; }
     public int ErrorID { get; set; }
-
+    public static BaseResponse<TResponse> FromData(
+     TResponse? data,
+     string? message = null,
+     string successMessage = "Success",
+     string notFoundMessage = "Record not found")
+    {
+        bool hasData = data != null;
+        return new BaseResponse<TResponse>
+        {
+            Data = data,
+            IsSuccess = hasData,
+            Message = message ?? (hasData ? successMessage : notFoundMessage),
+            StatusCode = hasData ? 200 : 404
+        };
+    }
 }
