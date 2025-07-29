@@ -12,17 +12,17 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
     public async Task<BaseResponse<int>> CreateAsync(CategoryModel user)
     {
         int id = await _dapperRepository.InsertAsync(user, DbSchema.CategoryTable);
-        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("category") };
+        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("category"),Data=id };
     }
     public async Task<BaseResponse<int>> UpdateAsync(CategoryModel user)
     {
         int id = await _dapperRepository.UpdateAsync(user, DbSchema.CategoryTable);
-        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("category") };
+        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("category"), Data = id };
     }
-    public async Task<BaseResponse<int>> DeleteAsync(int id)
+    public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {
         await _dapperRepository.DeleteAsync(id, DbSchema.CategoryTable);
-        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectDeletedSuccess("category") };
+        return new BaseResponse<bool> { IsSuccess = true, Message = MainMessages.SubjectDeletedSuccess("category") };
     }
 
     public async Task<BaseResponse<IEnumerable<CategoryModel>>> GetAllAsync()

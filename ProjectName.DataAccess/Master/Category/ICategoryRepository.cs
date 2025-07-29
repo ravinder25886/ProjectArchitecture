@@ -6,7 +6,7 @@ public interface ICategoryRepository
 {
     public Task<BaseResponse<int>> CreateAsync(CategoryModel user);
     public Task<BaseResponse<int>> UpdateAsync(CategoryModel user);
-    public Task<BaseResponse<int>> DeleteAsync(int id);
+    public Task<BaseResponse<bool>> DeleteAsync(int id);
     public Task<BaseResponse<CategoryModel>> GetByIdAsync(int id);
     public Task<BaseResponse<IEnumerable<CategoryModel>>> GetAllAsync();
 }

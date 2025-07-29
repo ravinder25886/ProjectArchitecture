@@ -1,14 +1,6 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-
-using Azure;
-using Azure.Core;
-
 using Microsoft.AspNetCore.Mvc;
-
 using ProjectName.Core.Master.Category;
-using ProjectName.Models;
 using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 
@@ -70,7 +62,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        BaseResponse<int> response =await _categoryService.DeleteAsync(id);
+        BaseResponse<bool> response =await _categoryService.DeleteAsync(id);
         return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 }

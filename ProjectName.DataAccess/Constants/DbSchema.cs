@@ -1,8 +1,8 @@
 namespace ProjectName.DataAccess.Constants;
 public static class DbSchema
 {
-    private const string Schema = "dbo.";
-
+    //private const string Schema = "dbo.";
+    private const string Schema = "";// In MYSQL database case we canot use any Schema
     // Tables
     public static string UserTable => $"{Schema}User";
     public static string CategoryTable => $"{Schema}Category";

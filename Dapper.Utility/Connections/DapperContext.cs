@@ -3,6 +3,8 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
+using MySql.Data.MySqlClient;
+
 using Npgsql;
 
 using RS.Dapper.Utility.Constants;
@@ -40,7 +42,7 @@ public class DapperContext
     {
         return DbType switch
         {
-            //DatabaseType.MySql => new MySqlConnection(_connectionString),
+            DatabaseType.MySql => new MySqlConnection(_connectionString),
             DatabaseType.PostgreSql => new NpgsqlConnection(_connectionString),
             _ => new SqlConnection(_connectionString),
         };

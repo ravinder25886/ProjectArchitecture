@@ -14,7 +14,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
     {
        return await _categoryRepository.UpdateAsync(request);
     }
-    public async Task<BaseResponse<int>> DeleteAsync(int id)
+    public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {
       return await _categoryRepository.DeleteAsync(id);
     }
