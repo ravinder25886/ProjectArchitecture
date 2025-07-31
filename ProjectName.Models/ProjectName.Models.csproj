@@ -14,4 +14,8 @@
     <Folder Include="Enums\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Dapper.Utility\RS.Dapper.Utility.csproj" />
+  </ItemGroup>
+
 </Project>

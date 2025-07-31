@@ -1,10 +1,8 @@
 
 using System.Data;
-
 using Dapper;
-
 using ProjectName.Models.Account;
-using ProjectName.DataAccess.Connections;
+using RS.Dapper.Utility.Connections;
 
 namespace ProjectName.DataAccess.Account.Login;
 // Implementation using Dapper or any DB access logic

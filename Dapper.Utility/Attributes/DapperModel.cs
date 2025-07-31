@@ -1,8 +1,8 @@
 using System.Reflection;
 
 using Dapper;
-// This abstract base class helps convert any derived model into Dapper DynamicParameters
-namespace ProjectName.Models.Dapper;
+
+namespace RS.Dapper.Utility.Attributes;
 public abstract class DapperModel
 {
     // Convert all properties except those marked [IgnoreParam]
