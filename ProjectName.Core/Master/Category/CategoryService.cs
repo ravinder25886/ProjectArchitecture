@@ -1,4 +1,5 @@
 using ProjectName.DataAccess.Master.Category;
+using ProjectName.Models;
 using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 
@@ -27,5 +28,24 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
     public async Task<BaseResponse<CategoryModel>> GetByIdAsync(int id)
     {
         return await _categoryRepository.GetByIdAsync(id);
+    }
+
+    public Task<BaseResponse<PagedResult<CategoryModel>>> GetPagedDataAsync(SearchRequest searchRequest)
+    {
+        List<SqlFilter> filters = new List<SqlFilter>();
+       
+        if (!string.IsNullOrWhiteSpace(searchRequest.SeachText))
+        {
+            filters.Add(new SqlFilter("Name", "LIKE", $"%{searchRequest.SeachText}%"));
+        }
+        PagedRequest pagedRequest = new PagedRequest
+        {
+            PageNumber=searchRequest.PageNumber,
+            PageSize = searchRequest.PageSize,
+            OrderBy =searchRequest.OrderBy,
+            SortDirection=searchRequest.SortDirection,
+            Filters= filters
+        };
+        return _categoryRepository.GetPagedDataAsync(pagedRequest);
     }
 }

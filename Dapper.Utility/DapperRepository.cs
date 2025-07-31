@@ -1,5 +1,8 @@
 using System.Data;
 using Dapper;
+
+using Google.Protobuf.WellKnownTypes;
+
 using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;
 
@@ -36,7 +39,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The number of rows affected by the update.</returns>
     public async Task<int> UpdateAsync<T>(T model, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildUpdate(model, tableName, keyColumn);
+        string sql = SqlBuilder.BuildUpdate(model, tableName, _databaseType, keyColumn);
         return await _connection.ExecuteAsync(sql, model);
     }
 
@@ -49,7 +52,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The number of rows affected by the delete operation.</returns>
     public async Task<int> DeleteAsync(object id, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildDelete(tableName, keyColumn);
+        string sql = SqlBuilder.BuildDelete(tableName, _databaseType, keyColumn);
         return await _connection.ExecuteAsync(sql, new { Id = id });
     }
 
@@ -63,7 +66,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The model instance if found; otherwise, null.</returns>
     public async Task<TModel?> GetByIdAsync<TModel, TId>(TId id, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildSelectById(tableName, keyColumn);
+        string sql = SqlBuilder.BuildSelectById< TModel>(tableName, _databaseType, keyColumn);
         return await _connection.QuerySingleOrDefaultAsync<TModel>(sql, new { Id = id });
     }
 
@@ -75,7 +78,49 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>An enumerable of all records in the table.</returns>
     public async Task<IEnumerable<T>> GetAllAsync<T>(string tableName)
     {
-        string sql = SqlBuilder.BuildSelectAll(tableName);
+        string sql = SqlBuilder.BuildSelectAll<T>(tableName,_databaseType);
         return await _connection.QueryAsync<T>(sql);
+    }
+
+    public async Task<PagedResult<T>> GetPagedDataAsync<T>(string tableName, PagedRequest pagedRequest)
+    {
+        List<SqlFilter> filters = new List<SqlFilter>();
+        foreach (var item in pagedRequest.Filters)
+        {
+            if (SqlFilterHelper.IsValidFilterValue(item.Value))
+            {
+                filters.Add(item);
+            }
+        }
+
+        var (pagedSql, parameters) = SqlBuilder.BuildDynamicFilterQueryWithParams<T>(
+            tableName: tableName,
+            filters: filters,
+            dbType: _databaseType,
+            pageSize: pagedRequest.PageSize,
+            pageNumber: pagedRequest.PageNumber,
+            orderBy: pagedRequest.OrderBy,
+            sortDirection: pagedRequest.SortDirection
+        );
+
+        // 2. Get count SQL
+         var (countSql, countParameters) = SqlBuilder.BuildCountQueryWithFilters(
+            tableName: tableName,
+            filters: filters,
+            dbType: _databaseType
+        );
+
+        // Then use both with Dapper
+        int totalRecords =await _connection.ExecuteScalarAsync<int>(countSql, countParameters);
+        var data =await _connection.QueryAsync<T>(pagedSql, parameters);
+
+        PagedResult<T> pagedResult = new PagedResult<T>
+        {
+            Data= (List<T>)data,
+            PageNumber= pagedRequest.PageNumber,
+            PageSize= pagedRequest.PageSize,
+            TotalRecords=totalRecords
+        };
+        return pagedResult;
     }
 }

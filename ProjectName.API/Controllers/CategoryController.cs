@@ -1,6 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+
 using Microsoft.AspNetCore.Mvc;
+
 using ProjectName.Core.Master.Category;
+using ProjectName.Models;
 using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 
@@ -30,7 +33,13 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
         return response.IsSuccess ? Ok(response) : BadRequest(response);
 
     }
+    [HttpGet("GetPagedData")]
+    public async Task<IActionResult> GetPagedData([FromQuery] SearchRequest searchRequest)
+    {
+        BaseResponse<PagedResult<CategoryModel>> response = await _categoryService.GetPagedDataAsync(searchRequest);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
 
+    }
     // POST api/<CategoryController>
     [HttpPost]
     public async Task<IActionResult> Post(CategoryRequest request)

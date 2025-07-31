@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Diagnostics;
+
 using ProjectName.Core;
 using ProjectName.DataAccess;
 
@@ -16,8 +18,37 @@ builder.Services.AddScoped<IDapperRepository, DapperRepository>();
 builder.Services.RS_DataAccessDependencyInjections(builder.Configuration);
 builder.Services.RS_CoreDependencyInjections(builder.Configuration);
 
+
+
+
 var app = builder.Build();
 
+// Configure global exception handling middleware to catch unhandled exceptions
+// This ensures that the API returns a generic error message without exposing sensitive details
+// It also allows centralized logging of errors, improving maintainability and security
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        // Optional: log the exception here
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(exception, "Unhandled exception occurred");
+
+        var response = new
+        {
+            Message = "An unexpected error occurred. Please try again later.",
+            context.Response.StatusCode,
+#if DEBUG
+            Details = exception?.ToString()
+#endif
+        };
+
+        await context.Response.WriteAsJsonAsync(response);
+    }));
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

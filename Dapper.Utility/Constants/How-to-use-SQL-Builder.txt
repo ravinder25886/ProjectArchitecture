@@ -1,0 +1,112 @@
+﻿public class User
+{
+    public int Id { get; set; }
+
+    public string FirstName { get; set; }
+
+    public string LastName { get; set; }
+
+    public string Email { get; set; }
+
+    public bool IsActive { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    [IgnoreParam] // This will be excluded from INSERT/UPDATE/SELECT columns
+    public string ComputedFullName => $"{FirstName} {LastName}";
+}
+//Insert
+   string sql = SqlBuilder.BuildInsert(model, tableName, _databaseType, keyColumn);
+        // Executes the insert and returns the generated primary key.
+return await _connection.ExecuteScalarAsync<int>(sql, model);
+//update
+  string sql = SqlBuilder.BuildUpdate(model, tableName, keyColumn);
+        return await _connection.ExecuteAsync(sql, model);
+//delete
+string sql = SqlBuilder.BuildDelete(tableName, keyColumn);
+        return await _connection.ExecuteAsync(sql, new { Id = id });
+
+//selected by id
+  string sql = SqlBuilder.BuildSelectById(tableName, keyColumn);
+  return await _connection.QuerySingleOrDefaultAsync<TModel>(sql, new { Id = id });
+
+  //select all
+  string sql = SqlBuilder.BuildSelectAll(tableName);
+        return await _connection.QueryAsync<T>(sql);
+
+//*******************DynamicFilterQuery filters
+var filters = new List<SqlFilter>
+{
+    new SqlFilter("IsActive", "=", true),
+    new SqlFilter("Email", "LIKE", "%@gmail.com"),
+    new SqlFilter("CreatedAt", ">", new DateTime(2024, 1, 1))
+};
+
+var (sql, parameters) = SqlBuilder.BuildDynamicFilterQueryWithParams<User>(
+    tableName: "Users",
+    filters: filters,
+    dbType: DatabaseType.PostgreSql
+);
+
+// Dapper usage
+var result = connection.Query<User>(sql, parameters);
+
+
+// Assume:
+// DatabaseType dbType = DatabaseType.SqlServer; // or MySql, PostgreSql
+// string tableName = "dbo.Users"; // your table
+// int id = 123;
+// int pageNumber = 1;
+// int pageSize = 10;
+// string orderBy = "Id";
+// var filters = new List<string> { "FirstName", "LastName" };
+// var searchColumns = new List<string> { "FirstName", "LastName" };
+// string inColumn = "Id";
+// var dynamicFilters = new List<SqlFilter>
+// {
+//     new SqlFilter("Age", ">", 25),
+//     new SqlFilter("LastName", "LIKE", "Smith")
+// };
+
+// 1. Select by Id
+string sqlSelectById = SqlBuilder.BuildSelectById<User>(tableName, dbType, "Id");
+// Use with Dapper:
+// var user = connection.QuerySingleOrDefault<User>(sqlSelectById, new { Id = id });
+
+// 2. Select all records
+string sqlSelectAll = SqlBuilder.BuildSelectAll<User>(tableName, dbType);
+// var users = connection.Query<User>(sqlSelectAll);
+
+// 3. Select columns (all non-ignored properties)
+string sqlSelectColumns = SqlBuilder.BuildSelectColumns<User>(tableName);
+// var users = connection.Query<User>(sqlSelectColumns);
+
+// 4. Select with filters on columns
+string sqlSelectWithFilters = SqlBuilder.BuildSelectWithFilters<User>(tableName, dbType, filters);
+// var usersFiltered = connection.Query<User>(sqlSelectWithFilters, new { FirstName = "John", LastName = "Doe" });
+
+// 5. Search query (LIKE across columns)
+string sqlSearchQuery = SqlBuilder.BuildSearchQuery<User>(tableName, dbType, searchColumns);
+string pagedSql = SqlBuilder.AppendPaging(sqlSearchQuery, dbType, pageSize, pageNumber, orderByColumn);
+// var usersSearched = connection.Query<User>(sqlSearchQuery, new { FirstName = "Jo", LastName = "Do" });
+
+// 6. Paged query
+string sqlPagedQuery = SqlBuilder.BuildPagedQuery<User>(tableName, dbType, pageSize, pageNumber, orderBy);
+// var pagedUsers = connection.Query<User>(sqlPagedQuery);
+
+// 7. Select IN clause
+string sqlSelectIn = SqlBuilder.BuildSelectIn<User>(tableName, dbType, inColumn);
+// var usersIn = connection.Query<User>(sqlSelectIn, new { Values = new int[] { 1, 2, 3 } });
+
+// 8. Dynamic filter query with operators and parameters
+var (sqlDynamicFilter, dynamicParams) = SqlBuilder.BuildDynamicFilterQueryWithParams<User>(tableName, dynamicFilters, dbType);
+// var filteredUsers = connection.Query<User>(sqlDynamicFilter, dynamicParams);
+
+// Class User (example)
+public class User
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int Age { get; set; }
+}

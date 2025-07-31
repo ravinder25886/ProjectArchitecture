@@ -1,13 +1,4 @@
-using RS.Dapper.Utility.Attributes;
-
-namespace ProjectName.Models;
-public class BaseModel
-{
-    [IgnoreOnInsert]  // Exclude Id during insert
-    public virtual long Id { get; set; }
-    public bool IsActive { get; set; }
-}
-public class SearchRequest
+public class PagedRequest
 {
     /// <summary>
     /// Page number starting from 1
@@ -28,5 +19,9 @@ public class SearchRequest
     /// Optional sort direction: ASC or DESC
     /// </summary>
     public string SortDirection { get; set; } = "ASC";
-    public string SeachText { get; set; } = "";
+
+    /// <summary>
+    /// List of filters to apply to the query
+    /// </summary>
+    public List<SqlFilter> Filters { get; set; } = default!;
 }

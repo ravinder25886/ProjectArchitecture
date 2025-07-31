@@ -1,3 +1,4 @@
+using ProjectName.Models;
 using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 
@@ -9,4 +10,5 @@ public interface ICategoryService
     public Task<BaseResponse<bool>> DeleteAsync(int id);
     public Task<BaseResponse<CategoryModel>> GetByIdAsync(int id);
     public Task<BaseResponse<IEnumerable<CategoryModel>>> GetAllAsync();
+    public Task<BaseResponse<PagedResult<CategoryModel>>> GetPagedDataAsync(SearchRequest searchRequest);
 }

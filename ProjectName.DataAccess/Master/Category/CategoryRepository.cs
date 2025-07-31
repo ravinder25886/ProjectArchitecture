@@ -29,13 +29,24 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
     {
         return new BaseResponse<IEnumerable<CategoryModel>>
         {
-            Data = await _dapperRepository.GetAllAsync<CategoryModel>(DbSchema.CategoryTable)
+            Data = await _dapperRepository.GetAllAsync<CategoryModel>(DbSchema.CategoryTable),
+            IsSuccess=true
         };
+
     }
 
     public async Task<BaseResponse<CategoryModel>> GetByIdAsync(int id)
     {
         var data=  await _dapperRepository.GetByIdAsync<CategoryModel,int>(id, DbSchema.CategoryTable);
         return BaseResponse<CategoryModel>.FromData(data, null);
+    }
+
+    public async Task<BaseResponse<PagedResult<CategoryModel>>> GetPagedDataAsync(PagedRequest pagedRequest)
+    {
+        return new BaseResponse<PagedResult<CategoryModel>>
+        {
+            Data=await _dapperRepository.GetPagedDataAsync<CategoryModel>(DbSchema.CategoryTable, pagedRequest),
+            IsSuccess=true
+        };
     }
 }
