@@ -1,7 +1,7 @@
 using RS.Dapper.Utility.Attributes;
 
 namespace ProjectName.Models;
-public class BaseModel
+public class BaseModel: DapperModel
 {
     [IgnoreOnInsert]  // Exclude Id during insert
     public virtual long Id { get; set; }

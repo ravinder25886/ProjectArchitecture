@@ -9,6 +9,6 @@ public interface ICategoryService
     public Task<BaseResponse<int>> UpdateAsync(CategoryModel request);
     public Task<BaseResponse<bool>> DeleteAsync(int id);
     public Task<BaseResponse<CategoryModel>> GetByIdAsync(int id);
-    public Task<BaseResponse<IEnumerable<CategoryModel>>> GetAllAsync();
-    public Task<BaseResponse<PagedResult<CategoryModel>>> GetPagedDataAsync(SearchRequest searchRequest);
+    public Task<BaseResponse<IEnumerable<CategoryResponse>>> GetAllAsync();
+    public Task<BaseResponse<PagedResult<CategoryResponse>>> GetPagedDataAsync(SearchRequest searchRequest);
 }

@@ -21,7 +21,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     public async Task<IActionResult> Get()
     {
         
-        BaseResponse <IEnumerable<CategoryModel>> response= await _categoryService.GetAllAsync();
+        BaseResponse <IEnumerable<CategoryResponse>> response= await _categoryService.GetAllAsync();
         return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 
@@ -36,7 +36,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     [HttpGet("GetPagedData")]
     public async Task<IActionResult> GetPagedData([FromQuery] SearchRequest searchRequest)
     {
-        BaseResponse<PagedResult<CategoryModel>> response = await _categoryService.GetPagedDataAsync(searchRequest);
+        BaseResponse<PagedResult<CategoryResponse>> response = await _categoryService.GetPagedDataAsync(searchRequest);
         return response.IsSuccess ? Ok(response) : BadRequest(response);
 
     }

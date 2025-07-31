@@ -258,7 +258,7 @@ public static class SqlBuilder
      int pageSize = 10,
      int pageNumber = 1,
      string? orderBy = "Id",
-     string sortDirection = "ASC" // NEW PARAM
+     string sortDirection = "ASC"  
  )
     {
         DynamicParameters parameters = new DynamicParameters();
@@ -297,37 +297,15 @@ public static class SqlBuilder
             _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
         };
 
-        string sql = $"SELECT * FROM {tableName} {whereClause} {orderClause} {paginationClause};";
+        // Use selected columns or fallback to *
+        string columns = GetColumnList<T>(dbType);
+        string sql = $"SELECT {columns} FROM {tableName} {whereClause} {orderClause} {paginationClause};";
         return (sql, parameters);
     }
-    /// <summary>
-    /// Appends a paging clause (ORDER BY + OFFSET/FETCH or LIMIT/OFFSET) to any SQL query.
-    /// </summary>
-    /// <param name="sql">Base SQL query (should NOT contain ORDER BY or paging)</param>
-    /// <param name="dbType">Database type</param>
-    /// <param name="pageSize">Number of records per page</param>
-    /// <param name="pageNumber">Page number (1-based)</param>
-    /// <param name="orderBy">Column name to order by (default "Id")</param>
-    /// <returns>SQL with appended paging clause</returns>
-    public static string AppendPaging(string sql, DatabaseType dbType, int pageSize, int pageNumber, string orderBy = "Id")
-    {
-        sql = sql.TrimEnd(';');
-        int offset = (pageNumber - 1) * pageSize;
-        string orderByQuoted = Quote(orderBy, dbType);
-
-        string pagingSql = dbType switch
-        {
-            DatabaseType.SqlServer => $"{sql} ORDER BY {orderByQuoted} OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
-            DatabaseType.MySql => $"{sql} ORDER BY {orderByQuoted} LIMIT {pageSize} OFFSET {offset}",
-            DatabaseType.PostgreSql => $"{sql} ORDER BY {orderByQuoted} LIMIT {pageSize} OFFSET {offset}",
-            _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
-        };
-        return pagingSql;
-    }
     public static (string sql, DynamicParameters parameters) BuildCountQueryWithFilters(
-    string tableName,
-    List<SqlFilter> filters,
-    DatabaseType dbType)
+       string tableName,
+       List<SqlFilter> filters,
+       DatabaseType dbType)
     {
         string Quote(string name)
         {
@@ -360,5 +338,30 @@ public static class SqlBuilder
 
         return (sql, parameters);
     }
+    /// <summary>
+    /// Appends a paging clause (ORDER BY + OFFSET/FETCH or LIMIT/OFFSET) to any SQL query.
+    /// </summary>
+    /// <param name="sql">Base SQL query (should NOT contain ORDER BY or paging)</param>
+    /// <param name="dbType">Database type</param>
+    /// <param name="pageSize">Number of records per page</param>
+    /// <param name="pageNumber">Page number (1-based)</param>
+    /// <param name="orderBy">Column name to order by (default "Id")</param>
+    /// <returns>SQL with appended paging clause</returns>
+    public static string AppendPaging(string sql, DatabaseType dbType, int pageSize, int pageNumber, string orderBy = "Id")
+    {
+        sql = sql.TrimEnd(';');
+        int offset = (pageNumber - 1) * pageSize;
+        string orderByQuoted = Quote(orderBy, dbType);
+
+        string pagingSql = dbType switch
+        {
+            DatabaseType.SqlServer => $"{sql} ORDER BY {orderByQuoted} OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
+            DatabaseType.MySql => $"{sql} ORDER BY {orderByQuoted} LIMIT {pageSize} OFFSET {offset}",
+            DatabaseType.PostgreSql => $"{sql} ORDER BY {orderByQuoted} LIMIT {pageSize} OFFSET {offset}",
+            _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
+        };
+        return pagingSql;
+    }
+   
 
 }

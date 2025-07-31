@@ -97,7 +97,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
             pageSize: pagedRequest.PageSize,
             pageNumber: pagedRequest.PageNumber,
             orderBy: pagedRequest.OrderBy,
-            sortDirection: pagedRequest.SortDirection
+            sortDirection: pagedRequest.SortDirection 
         );
 
         // 2. Get count SQL
@@ -113,7 +113,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
 
         PagedResult<T> pagedResult = new PagedResult<T>
         {
-            Data= (List<T>)data,
+            Items= (List<T>)data,
             PageNumber= pagedRequest.PageNumber,
             PageSize= pagedRequest.PageSize,
             TotalRecords=totalRecords

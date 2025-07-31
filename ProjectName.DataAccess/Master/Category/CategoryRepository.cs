@@ -25,11 +25,11 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
         return new BaseResponse<bool> { IsSuccess = true, Message = MainMessages.SubjectDeletedSuccess("category") };
     }
 
-    public async Task<BaseResponse<IEnumerable<CategoryModel>>> GetAllAsync()
+    public async Task<BaseResponse<IEnumerable<CategoryResponse>>> GetAllAsync()
     {
-        return new BaseResponse<IEnumerable<CategoryModel>>
+        return new BaseResponse<IEnumerable<CategoryResponse>>
         {
-            Data = await _dapperRepository.GetAllAsync<CategoryModel>(DbSchema.CategoryTable),
+            Data = await _dapperRepository.GetAllAsync<CategoryResponse>(DbSchema.CategoryTable),
             IsSuccess=true
         };
 
@@ -41,11 +41,11 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
         return BaseResponse<CategoryModel>.FromData(data, null);
     }
 
-    public async Task<BaseResponse<PagedResult<CategoryModel>>> GetPagedDataAsync(PagedRequest pagedRequest)
+    public async Task<BaseResponse<PagedResult<CategoryResponse>>> GetPagedDataAsync(PagedRequest pagedRequest)
     {
-        return new BaseResponse<PagedResult<CategoryModel>>
+        return new BaseResponse<PagedResult<CategoryResponse>>
         {
-            Data=await _dapperRepository.GetPagedDataAsync<CategoryModel>(DbSchema.CategoryTable, pagedRequest),
+            Data=await _dapperRepository.GetPagedDataAsync<CategoryResponse>(DbSchema.CategoryTable, pagedRequest),
             IsSuccess=true
         };
     }

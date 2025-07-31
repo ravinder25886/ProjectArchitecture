@@ -20,7 +20,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
       return await _categoryRepository.DeleteAsync(id);
     }
 
-    public async Task<BaseResponse<IEnumerable<CategoryModel>>> GetAllAsync()
+    public async Task<BaseResponse<IEnumerable<CategoryResponse>>> GetAllAsync()
     {
         return await _categoryRepository.GetAllAsync();
     }
@@ -30,7 +30,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
         return await _categoryRepository.GetByIdAsync(id);
     }
 
-    public Task<BaseResponse<PagedResult<CategoryModel>>> GetPagedDataAsync(SearchRequest searchRequest)
+    public Task<BaseResponse<PagedResult<CategoryResponse>>> GetPagedDataAsync(SearchRequest searchRequest)
     {
         List<SqlFilter> filters = new List<SqlFilter>();
        
@@ -44,7 +44,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
             PageSize = searchRequest.PageSize,
             OrderBy =searchRequest.OrderBy,
             SortDirection=searchRequest.SortDirection,
-            Filters= filters
+            Filters= filters 
         };
         return _categoryRepository.GetPagedDataAsync(pagedRequest);
     }
