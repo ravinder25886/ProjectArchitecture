@@ -1,14 +1,17 @@
-using System.Collections.Concurrent;
 using System.Data;
 using System.Reflection;
 
 using Dapper;
+
+using Microsoft.Extensions.Caching.Memory;
 
 using RS.Dapper.Utility.Attributes;
 
 namespace RS.Dapper.Utility.Constants;
 public static class SqlBuilder
 {
+    /*
+     * If we don't want to use IMemoryCache then please un-comment following code and commment IMemoryCache code
     private static readonly ConcurrentDictionary<string, string> _sqlCache = new();
     /// <summary>
     /// Adds or retrieves a SQL query from the cache based on a key.
@@ -16,6 +19,21 @@ public static class SqlBuilder
     private static string GetOrAddToCache(string cacheKey, Func<string> sqlBuilder)
     {
         return _sqlCache.GetOrAdd(cacheKey, _ => sqlBuilder());
+    }
+    */
+    private static IMemoryCache? _cache;
+
+    // Call this method once during app startup to inject IMemoryCache
+    public static void Initialize(IMemoryCache memoryCache)
+    {
+        _cache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+    }
+    private static string GetOrAddToCache(string cacheKey, Func<string> sqlBuilder)
+    {
+        return _cache == null
+            ? throw new InvalidOperationException("SqlBuilder cache not initialized. Call SqlBuilder.Initialize() with IMemoryCache.")
+            : _cache.GetOrCreate(cacheKey, entry =>
+            sqlBuilder())!;
     }
     public static string QuoteIdentifier(string identifier, DatabaseType dbType)
     {
@@ -252,92 +270,158 @@ public static class SqlBuilder
     /// Builds a SELECT query with dynamic WHERE filters and returns both SQL and DynamicParameters based on database type.
     /// </summary>
     public static (string Sql, DynamicParameters Parameters) BuildDynamicFilterQueryWithParams<T>(
-     string tableName,
-     List<SqlFilter>? filters,
-     DatabaseType dbType,
-     int pageSize = 10,
-     int pageNumber = 1,
-     string? orderBy = "Id",
-     string sortDirection = "ASC"  
- )
+       string tableName,
+       List<SqlFilter>? filters,
+       DatabaseType dbType,
+       int pageSize = 10,
+       int pageNumber = 1,
+       string? orderBy = "Id",
+       string sortDirection = "ASC"
+   )
     {
-        DynamicParameters parameters = new DynamicParameters();
-        List<string> whereClauses = new List<string>();
+        // Prepare cache key based on tableName, dbType, and filters' column+operator only
+        string filtersKey = filters != null && filters.Any()
+            ? string.Join(",", filters.Select(f => $"{f.Column}:{f.Operator}").OrderBy(s => s))
+            : "nofilter";
 
+        string cacheKey = $"DynamicFilterQuery:{typeof(T).FullName}:{tableName}:{dbType}:{filtersKey}:{orderBy}:{sortDirection}:{pageSize}:{pageNumber}";
+
+        // Use GetOrAddToCache to get or build the SQL string (no params here)
+        string sql = GetOrAddToCache(cacheKey, () =>
+        {
+            List<string> whereClauses = new List<string>();
+
+            if (filters != null && filters.Any())
+            {
+                int paramIndex = 0;
+                foreach (var filter in filters)
+                {
+                    // Use a placeholder param name in SQL; actual param names will differ below
+                    
+                    whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator.ToSqlString(dbType)} @{filter.Column}_{paramIndex++}");
+                }
+            }
+
+            string whereClause = whereClauses.Count > 0
+                ? "WHERE " + string.Join(" AND ", whereClauses)
+                : "";
+
+            if (string.IsNullOrEmpty(orderBy) && dbType == DatabaseType.SqlServer)
+            {
+                orderBy = "Id";
+            }
+
+            string orderClause = !string.IsNullOrEmpty(orderBy)
+                ? $"ORDER BY {QuoteIdentifier(orderBy, dbType)} {sortDirection.ToUpper()}"
+                : "";
+
+            int offset = (pageNumber - 1) * pageSize;
+
+            string paginationClause = dbType switch
+            {
+                DatabaseType.SqlServer => $"OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
+                DatabaseType.MySql => $"LIMIT {pageSize} OFFSET {offset}",
+                DatabaseType.PostgreSql => $"LIMIT {pageSize} OFFSET {offset}",
+                _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
+            };
+
+            string columns = GetColumnList<T>(dbType);
+
+            return $"SELECT {columns} FROM {tableName} {whereClause} {orderClause} {paginationClause};";
+        });
+
+        // Build fresh parameters with unique names for this call (to avoid conflicts)
+        DynamicParameters parameters = new DynamicParameters();
         if (filters != null && filters.Any())
         {
+            int paramIndex = 0;
             foreach (var filter in filters)
             {
-                string paramName = $"@{filter.Column}_{parameters.ParameterNames.Count()}";
-                whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator.ToSqlString(dbType)} {paramName}");
+                string paramName = $"@{filter.Column}_{paramIndex++}";
                 parameters.Add(paramName, filter.Value);
             }
         }
 
-        string whereClause = whereClauses.Count > 0
-            ? "WHERE " + string.Join(" AND ", whereClauses)
-            : "";
-        // If orderBy is null/empty and DB is SqlServer, use default column (e.g. Id)
-        if (string.IsNullOrEmpty(orderBy) && dbType == DatabaseType.SqlServer)
-        {
-            orderBy = "Id";  // Or your actual primary key column
-        }
-
-        string orderClause = !string.IsNullOrEmpty(orderBy)
-            ? $"ORDER BY {QuoteIdentifier(orderBy, dbType)} {sortDirection?.ToUpper() ?? "ASC"}"
-            : "";
-
-        int offset = (pageNumber - 1) * pageSize;
-
-        string paginationClause = dbType switch
-        {
-            DatabaseType.SqlServer => $"OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
-            DatabaseType.MySql => $"LIMIT {pageSize} OFFSET {offset}",
-            DatabaseType.PostgreSql => $"LIMIT {pageSize} OFFSET {offset}",
-            _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
-        };
-
-        // Use selected columns or fallback to *
-        string columns = GetColumnList<T>(dbType);
-        string sql = $"SELECT {columns} FROM {tableName} {whereClause} {orderClause} {paginationClause};";
         return (sql, parameters);
     }
+    /// <summary>
+    /// Builds a parameterized SQL COUNT query with dynamic WHERE filters, supporting caching of the SQL query template.
+    /// </summary>
+    /// <param name="tableName">The name of the database table to query.</param>
+    /// <param name="filters">A list of filters specifying columns, operators, and values for the WHERE clause.</param>
+    /// <param name="dbType">The type of the target database (e.g., SqlServer, MySql, PostgreSql) for proper SQL syntax quoting.</param>
+    /// <returns>
+    /// A tuple containing:
+    ///   - The cached or newly generated SQL COUNT query string with parameter placeholders (cached by table name, filter columns, and operators).
+    ///   - A new <see cref="DynamicParameters"/> instance with uniquely named parameters and their corresponding values for safe parameterization.
+    /// </returns>
+    /// <remarks>
+    /// The SQL query string is cached based on table name, database type, and the filter columns and operators, but NOT on filter values.
+    /// Filter values are always passed as fresh parameters to avoid cache collisions and ensure correct query execution.
+    /// Parameter names in the cached SQL are generic (e.g., '@ColumnName'), while the actual <see cref="DynamicParameters"/> use unique names (e.g., '@Column_0', '@Column_1').
+    /// This method ensures SQL injection safety by using parameterized queries.
+    /// </remarks>
     public static (string sql, DynamicParameters parameters) BuildCountQueryWithFilters(
-       string tableName,
-       List<SqlFilter> filters,
-       DatabaseType dbType)
+      string tableName,
+      List<SqlFilter> filters,
+      DatabaseType dbType)
     {
-        string Quote(string name)
+        string filtersKey = filters != null && filters.Any()
+            ? string.Join(",", filters.Select(f => $"{f.Column}:{f.Operator}").OrderBy(s => s))
+            : "nofilter";
+
+        string cacheKey = $"CountQuery:{tableName}:{dbType}:{filtersKey}";
+
+        // Get or build SQL string with generic parameter placeholders
+        string sql = GetOrAddToCache(cacheKey, () =>
         {
-            return dbType switch
+            string Quote(string name)
             {
-                DatabaseType.SqlServer => $"[{name}]",
-                DatabaseType.MySql => $"`{name}`",
-                DatabaseType.PostgreSql => $"\"{name}\"",
-                _ => name
-            };
-        }
+                return dbType switch
+                {
+                    DatabaseType.SqlServer => $"[{name}]",
+                    DatabaseType.MySql => $"`{name}`",
+                    DatabaseType.PostgreSql => $"\"{name}\"",
+                    _ => name
+                };
+            }
 
-        string quotedTable = Quote(tableName);
-        List<string> whereClauses = new();
+            string quotedTable = Quote(tableName);
+            List<string> whereClauses = new();
+
+            if (filters != null && filters.Any())
+            {
+                int paramIndex = 0;
+                foreach (var filter in filters)
+                {
+                    string paramName = $"@{filter.Column}_{paramIndex}";
+                    whereClauses.Add($"{Quote(filter.Column)} {filter.Operator.ToSqlString(dbType)} {paramName}");
+                    paramIndex++;
+                }
+            }
+
+            string whereClause = whereClauses.Count > 0
+                ? " WHERE " + string.Join(" AND ", whereClauses)
+                : "";
+
+            return $"SELECT COUNT(1) FROM {quotedTable}{whereClause};";
+        });
+
+        // Build fresh DynamicParameters with unique param names per call
         DynamicParameters parameters = new DynamicParameters();
-
-        for (int i = 0; i < filters.Count; i++)
+        if (filters != null && filters.Any())
         {
-            var filter = filters[i];
-            string paramName = $"@{filter.Column}_{i}"; // Unique
-            whereClauses.Add($"{Quote(filter.Column)} {filter.Operator.ToSqlString(dbType)} {paramName}");
-            parameters.Add(paramName, filter.Value);
+            for (int i = 0; i < filters.Count; i++)
+            {
+                var filter = filters[i];
+                string paramName = $"@{filter.Column}_{i}"; // unique param name
+                parameters.Add(paramName, filter.Value);
+            }
         }
-
-        string whereClause = whereClauses.Count > 0
-            ? " WHERE " + string.Join(" AND ", whereClauses)
-            : "";
-
-        string sql = $"SELECT COUNT(1) FROM {quotedTable}{whereClause};";
 
         return (sql, parameters);
     }
+
     /// <summary>
     /// Appends a paging clause (ORDER BY + OFFSET/FETCH or LIMIT/OFFSET) to any SQL query.
     /// </summary>

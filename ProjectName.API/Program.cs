@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 
 using ProjectName.Core;
 using ProjectName.DataAccess;
 
 using RS.Dapper.Utility;
 using RS.Dapper.Utility.Connections;
+using RS.Dapper.Utility.Constants;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -18,10 +20,14 @@ builder.Services.AddScoped<IDapperRepository, DapperRepository>();
 builder.Services.RS_DataAccessDependencyInjections(builder.Configuration);
 builder.Services.RS_CoreDependencyInjections(builder.Configuration);
 
-
-
-
+//setup SqlBuilder IMemoryCache
+builder.Services.AddMemoryCache();
 var app = builder.Build();
+
+//setup SqlBuilder IMemoryCache
+
+var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
+SqlBuilder.Initialize(memoryCache);
 
 // Configure global exception handling middleware to catch unhandled exceptions
 // This ensures that the API returns a generic error message without exposing sensitive details

@@ -9,15 +9,15 @@ namespace ProjectName.DataAccess.Master.Category;
 public class CategoryRepository(IDapperRepository dapperRepository) :  ICategoryRepository
 {
     private readonly IDapperRepository _dapperRepository = dapperRepository;
-    public async Task<BaseResponse<int>> CreateAsync(CategoryModel user)
+    public async Task<BaseResponse<int>> CreateAsync(CategoryModel request)
     {
-        int id = await _dapperRepository.InsertAsync(user, DbSchema.CategoryTable);
+        int id = await _dapperRepository.InsertAsync(request, DbSchema.CategoryTable);
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("category"),Data=id };
     }
-    public async Task<BaseResponse<int>> UpdateAsync(CategoryModel user)
+    public async Task<BaseResponse<int>> UpdateAsync(CategoryModel request)
     {
-        int id = await _dapperRepository.UpdateAsync(user, DbSchema.CategoryTable);
-        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("category"), Data = id };
+         await _dapperRepository.UpdateAsync(request, DbSchema.CategoryTable);
+        return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("category") };
     }
     public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {

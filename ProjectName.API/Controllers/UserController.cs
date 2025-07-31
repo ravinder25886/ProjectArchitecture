@@ -1,12 +1,7 @@
-using System.Threading.Tasks;
-
-using Azure;
-
 using Microsoft.AspNetCore.Mvc;
 
 using ProjectName.Core.User;
 using ProjectName.Models.Account;
-using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
