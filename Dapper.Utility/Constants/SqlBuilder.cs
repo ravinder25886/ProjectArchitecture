@@ -269,7 +269,7 @@ public static class SqlBuilder
             foreach (var filter in filters)
             {
                 string paramName = $"@{filter.Column}_{parameters.ParameterNames.Count()}";
-                whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator} {paramName}");
+                whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator.ToSqlString(dbType)} {paramName}");
                 parameters.Add(paramName, filter.Value);
             }
         }
@@ -348,7 +348,7 @@ public static class SqlBuilder
         {
             var filter = filters[i];
             string paramName = $"@{filter.Column}_{i}"; // Unique
-            whereClauses.Add($"{Quote(filter.Column)} {filter.Operator} {paramName}");
+            whereClauses.Add($"{Quote(filter.Column)} {filter.Operator.ToSqlString(dbType)} {paramName}");
             parameters.Add(paramName, filter.Value);
         }
 

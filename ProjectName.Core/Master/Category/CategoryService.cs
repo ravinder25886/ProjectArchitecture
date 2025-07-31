@@ -36,7 +36,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
        
         if (!string.IsNullOrWhiteSpace(searchRequest.SeachText))
         {
-            filters.Add(new SqlFilter("Name", "LIKE", $"%{searchRequest.SeachText}%"));
+            filters.Add(new SqlFilter("Name", SqlOperator.Like, $"%{searchRequest.SeachText}%"));
         }
         PagedRequest pagedRequest = new PagedRequest
         {

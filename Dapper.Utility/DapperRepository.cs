@@ -1,8 +1,5 @@
 using System.Data;
 using Dapper;
-
-using Google.Protobuf.WellKnownTypes;
-
 using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;
 
