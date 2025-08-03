@@ -15,8 +15,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//Start-RS.Dapper.Utility
+DbSchema.Initialize(builder.Configuration);
 builder.Services.AddSingleton<DapperContext>(); // Or Scoped/Transient based on your design
 builder.Services.AddScoped<IDapperRepository, DapperRepository>();
+//End-RS.Dapper.Utility
+
 builder.Services.RS_DataAccessDependencyInjections(builder.Configuration);
 builder.Services.RS_CoreDependencyInjections(builder.Configuration);
 

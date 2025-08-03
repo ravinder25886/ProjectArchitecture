@@ -75,7 +75,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>An enumerable of all records in the table.</returns>
     public async Task<IEnumerable<T>> GetAllAsync<T>(string tableName)
     {
-        string sql = SqlBuilder.BuildSelectAll<T>(tableName,_databaseType);
+        string sql = SqlBuilder.BuildSelectAll<T>(tableName, _databaseType);
         return await _connection.QueryAsync<T>(sql);
     }
 

@@ -386,7 +386,7 @@ public static class SqlBuilder
                 };
             }
 
-            string quotedTable = Quote(tableName);
+            //string quotedTable = Quote(tableName);
             List<string> whereClauses = new();
 
             if (filters != null && filters.Any())
@@ -404,7 +404,7 @@ public static class SqlBuilder
                 ? " WHERE " + string.Join(" AND ", whereClauses)
                 : "";
 
-            return $"SELECT COUNT(1) FROM {quotedTable}{whereClause};";
+            return $"SELECT COUNT(1) FROM {tableName}{whereClause};";
         });
 
         // Build fresh DynamicParameters with unique param names per call

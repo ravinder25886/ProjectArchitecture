@@ -2,7 +2,7 @@
 using System.Data;
 
 using Dapper;
-using ProjectName.DataAccess.Constants;
+
 using ProjectName.Models.Account;
 using ProjectName.Utilities.BaseResponseModel;
 using ProjectName.Utilities.Constants;
