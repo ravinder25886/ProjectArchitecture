@@ -12,7 +12,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
         return await _categoryRepository.CreateAsync(request);
     }
     public async Task<BaseResponse<int>> UpdateAsync(CategoryModel request)
-    {
+    { 
        return await _categoryRepository.UpdateAsync(request);
     }
     public async Task<BaseResponse<bool>> DeleteAsync(int id)
