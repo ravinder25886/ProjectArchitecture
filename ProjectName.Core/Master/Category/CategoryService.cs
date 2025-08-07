@@ -8,7 +8,7 @@ public class CategoryService(ICategoryRepository categoryRepository):ICategorySe
 {
     private readonly ICategoryRepository _categoryRepository=categoryRepository;
     public async Task<BaseResponse<int>> AddAsync(CategoryModel request)
-    {
+    { 
         return await _categoryRepository.CreateAsync(request);
     }
     public async Task<BaseResponse<int>> UpdateAsync(CategoryModel request)
