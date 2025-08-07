@@ -63,33 +63,65 @@ public static class SqlBuilder
     /// </summary>
     private static string GetColumnList<T>(DatabaseType dbType)
     {
-        return string.Join(", ", typeof(T).GetProperties()
-            .Where(p => !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)))
-            .Select(p => Quote(p.Name, dbType)));
+        
+        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+          .Where(p => !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)));
+
+        var columns = props.Select(p =>
+        {
+            var attr = p.GetCustomAttribute<SqlParamAttribute>();
+            string column = attr?.Name ?? p.Name;
+            string property = p.Name;
+            return $"{Quote(column, dbType)} AS {Quote(property, dbType)}";
+        });
+
+        return string.Join(", ", columns);
     }
 
     /// <summary>
-    /// Builds a parameterized INSERT SQL statement with optional RETURNING/OUTPUT clause depending on database type.
+    /// Builds a parameterized SQL INSERT statement for the given model and table,
+    /// including all properties except the primary key (by default, "Id").
+    /// Automatically maps property names to database column names based on the <c>[SqlParam]</c> attribute, if available.
     /// </summary>
-    /// <typeparam name="T">Model type</typeparam>
-    /// <param name="model">Model instance</param>
-    /// <param name="tableName">Table name, optionally with schema (e.g. "dbo.Users")</param>
-    /// <param name="dbType">Database engine type</param>
-    /// <param name="keyColumn">Primary key column name</param>
-    /// <returns>SQL string</returns>
-    public static string BuildInsert<T>(T model, string tableName, DatabaseType dbType, string keyColumn = "Id")
+    /// <typeparam name="T">The type of the model to insert.</typeparam>
+    /// <param name="model">The instance of the model containing values to insert.</param>
+    /// <param name="tableName">The name of the database table to insert into.</param>
+    /// <param name="dbType">The target database type (e.g., SQL Server, MySQL, PostgreSQL).</param>
+    /// <param name="keyColumn">The name of the primary key column to exclude from the insert (default is "Id").</param>
+    /// <returns>
+    /// A tuple containing:
+    /// <list type="bullet">
+    ///   <item><description><c>Sql</c>: The generated SQL INSERT command as a string.</description></item>
+    ///   <item><description><c>Parameters</c>: The Dapper <see cref="DynamicParameters"/> object with mapped values.</description></item>
+    /// </list>
+    /// </returns>
+    public static (string Sql, DynamicParameters Parameters) BuildInsert<T>(
+      T model,
+      string tableName,
+      DatabaseType dbType,
+      string keyColumn = "Id")
     {
         string cacheKey = $"Insert:{typeof(T).FullName}:{tableName}:{dbType}:{keyColumn}";
 
-        return GetOrAddToCache(cacheKey, () =>
+        string sql = GetOrAddToCache(cacheKey, () =>
         {
             List<PropertyInfo> props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase)
                             && !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)))
                 .ToList();
 
-            string columns = string.Join(", ", props.Select(p => Quote(p.Name, dbType)));
-            string parameters = string.Join(", ", props.Select(p => "@" + p.Name));
+            string columns = string.Join(", ", props.Select(p =>
+            {
+                var attr = p.GetCustomAttribute<SqlParamAttribute>();
+                return Quote(attr?.Name ?? p.Name, dbType);
+            }));
+
+            string parameters = string.Join(", ", props.Select(p =>
+            {
+                var attr = p.GetCustomAttribute<SqlParamAttribute>();
+                return "@" + (attr?.Name ?? p.Name);
+            }));
+
             string baseSql = $"INSERT INTO {tableName} ({columns}) VALUES ({parameters})";
 
             return dbType switch
@@ -100,26 +132,90 @@ public static class SqlBuilder
                 _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
             };
         });
+
+        // Build parameters using [SqlParam] if available
+        DynamicParameters dynParams = new DynamicParameters();
+        foreach (var prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (Attribute.IsDefined(prop, typeof(IgnoreParamAttribute)) ||
+                string.Equals(prop.Name, keyColumn, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var attr = prop.GetCustomAttribute<SqlParamAttribute>();
+            string paramName = attr?.Name ?? prop.Name;
+            object? value = prop.GetValue(model);
+            dynParams.Add("@" + paramName, value);
+        }
+
+        return (sql, dynParams);
     }
 
+
     /// <summary>
-    /// Builds an UPDATE SQL statement based on non-null properties except the key column.
+    /// Builds a parameterized SQL UPDATE statement for the given model and table,
+    /// updating all properties except the primary key (by default, "Id").
+    /// Automatically maps property names to database column names based on the <c>[SqlParam]</c> attribute, if available.
     /// </summary>
-    public static string BuildUpdate<T>(T model, string tableName, DatabaseType dbType, string keyColumn = "Id")
+    /// <typeparam name="T">The type of the model to update.</typeparam>
+    /// <param name="model">The instance of the model containing updated values.</param>
+    /// <param name="tableName">The name of the database table to update.</param>
+    /// <param name="dbType">The target database type (e.g., SQL Server, MySQL, PostgreSQL).</param>
+    /// <param name="keyColumn">The name of the primary key column used in the WHERE clause (default is "Id").</param>
+    /// <returns>
+    /// A tuple containing:
+    /// <list type="bullet">
+    ///   <item><description><c>Sql</c>: The generated SQL UPDATE command as a string.</description></item>
+    ///   <item><description><c>Parameters</c>: The Dapper <see cref="DynamicParameters"/> object with mapped values, including the key column.</description></item>
+    /// </list>
+    /// </returns>
+    public static (string Sql, DynamicParameters Parameters) BuildUpdate<T>(
+    T model,
+    string tableName,
+    DatabaseType dbType,
+    string keyColumn = "Id")
     {
         string cacheKey = $"Update:{typeof(T).FullName}:{tableName}:{dbType}:{keyColumn}";
 
-        return GetOrAddToCache(cacheKey, () =>
+        string sql = GetOrAddToCache(cacheKey, () =>
         {
             List<PropertyInfo> props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase)
-                            && !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)))
+                .Where(p => !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)) &&
+                            !string.Equals(p.Name, keyColumn, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            string setClause = string.Join(", ", props.Select(p => $"{Quote(p.Name, dbType)} = @{p.Name}"));
-            return $"UPDATE {tableName} SET {setClause} WHERE {Quote(keyColumn, dbType)} = @{keyColumn};";
+            // Generate SET clauses using column names
+            string setClause = string.Join(", ", props.Select(p =>
+            {
+                var attr = p.GetCustomAttribute<SqlParamAttribute>();
+                string columnName = attr?.Name ?? p.Name;
+                return $"{Quote(columnName, dbType)} = @{columnName}";
+            }));
+
+            string whereClause = $"{Quote(keyColumn, dbType)} = @{keyColumn}";
+
+            return $"UPDATE {tableName} SET {setClause} WHERE {whereClause};";
         });
+
+        // Generate parameters
+        DynamicParameters parameters = new DynamicParameters();
+        foreach (var prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (Attribute.IsDefined(prop, typeof(IgnoreParamAttribute)))
+            {
+                continue;
+            }
+
+            var attr = prop.GetCustomAttribute<SqlParamAttribute>();
+            string paramName = attr?.Name ?? prop.Name;
+            object? value = prop.GetValue(model);
+            parameters.Add("@" + paramName, value);
+        }
+
+        return (sql, parameters);
     }
+
 
     /// <summary>
     /// Builds a DELETE SQL statement.
@@ -446,6 +542,5 @@ public static class SqlBuilder
         };
         return pagingSql;
     }
-   
 
 }

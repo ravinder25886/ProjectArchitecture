@@ -21,9 +21,8 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The primary key value of the newly inserted record.</returns>
     public async Task<int> InsertAsync<T>(T model, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildInsert(model, tableName, _databaseType, keyColumn);
-        // Executes the insert and returns the generated primary key.
-        return await _connection.ExecuteScalarAsync<int>(sql, model);
+        var (sql, parameters) = SqlBuilder.BuildInsert(model, tableName, _databaseType, keyColumn);
+        return await _connection.ExecuteScalarAsync<int>(sql, parameters);
     }
 
     /// <summary>
@@ -36,8 +35,8 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The number of rows affected by the update.</returns>
     public async Task<int> UpdateAsync<T>(T model, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildUpdate(model, tableName, _databaseType, keyColumn);
-        return await _connection.ExecuteAsync(sql, model);
+        var (sql, parameters) = SqlBuilder.BuildUpdate(model, tableName, _databaseType,keyColumn);
+        return await _connection.ExecuteAsync(sql, parameters);
     }
 
     /// <summary>

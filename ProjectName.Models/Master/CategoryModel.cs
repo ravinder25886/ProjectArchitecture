@@ -6,6 +6,7 @@ namespace ProjectName.Models.Master;
 public class CategoryModel: BaseModel
 {
     [MaxLength(255)]
+    [SqlParam("Name")]
     public required string Name { get; set; }
     [MaxLength(500)]
     public string? Description { get; set; }
