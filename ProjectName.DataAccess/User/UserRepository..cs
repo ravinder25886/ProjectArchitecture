@@ -24,7 +24,7 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {
         await _dapperExecutor.ExecuteAsync(
-           "User_Delete",
+           DbSchema.UserDeleteProc,
            new { Id = id },
            commandType: CommandType.StoredProcedure
        );
@@ -35,7 +35,7 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     {
         DynamicParameters parameters = new DynamicParameters();
         //parameters.Add("@SearchText","search text");// If we want then we can add Parameters also 
-        return new BaseResponse<IEnumerable<UserModel>> { IsSuccess = true, Data = await _dapperExecutor.QueryAsync<UserModel>("User_GetAll", parameters, commandType: CommandType.Text) };
+        return new BaseResponse<IEnumerable<UserModel>> { IsSuccess = true, Data = await _dapperExecutor.QueryAsync<UserModel>(DbSchema.UserGetAllProc, parameters, commandType: CommandType.Text) };
     }
 
     public async Task<BaseResponse<UserModel>> GetByIdAsync(int id)
