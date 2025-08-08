@@ -13,9 +13,11 @@ public static class DbSchema
     public static string CategoryTable => GetTable($"Category",Schema);
 
     // Stored Procedures
-    public static string UserGetByIdProc => GetTable($"User_GetById", Schema);
-    public static string UserInsertProc => GetTable($"User_Insert", Schema);
-    public static string UserUpdateProc => GetTable($"User_Update", Schema);
+    public static string UserGetByIdProc => GetProcedure($"User_GetById", Schema);
+    public static string UserInsertProc => GetProcedure($"User_Insert", Schema);
+    public static string UserUpdateProc => GetProcedure($"User_Update", Schema);
+    public static string UserDeleteProc => GetProcedure($"User_Delete", Schema);
+    public static string UserGetAllProc => GetProcedure($"User_GetAll", Schema);
 
     private static DatabaseType _dbType = DatabaseType.SqlServer;
     public static void Initialize(IConfiguration configuration)
