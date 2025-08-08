@@ -2,8 +2,8 @@ using ProjectName.Models.Master;
 using ProjectName.Utilities.BaseResponseModel;
 using ProjectName.Utilities.Constants;
 
-using RS.Dapper.Utility;
 using RS.Dapper.Utility.Connections;
+using RS.Dapper.Utility.Repositories.DapperRepository;
 
 namespace ProjectName.DataAccess.Master.Category;
 public class CategoryRepository(IDapperRepository dapperRepository) :  ICategoryRepository

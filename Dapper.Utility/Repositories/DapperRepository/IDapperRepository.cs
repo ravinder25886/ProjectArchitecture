@@ -1,4 +1,4 @@
-namespace RS.Dapper.Utility;
+namespace RS.Dapper.Utility.Repositories.DapperRepository;
 public interface IDapperRepository
 {
     public Task<int> InsertAsync<T>(T model, string tableName, string keyColumn = "Id");

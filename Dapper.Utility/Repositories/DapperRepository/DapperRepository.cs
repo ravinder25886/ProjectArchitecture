@@ -1,9 +1,11 @@
 using System.Data;
+
 using Dapper;
+
 using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;
 
-namespace RS.Dapper.Utility;
+namespace RS.Dapper.Utility.Repositories.DapperRepository;
 public class DapperRepository(DapperContext context): IDapperRepository
 {
     private readonly DapperContext _context = context;

@@ -4,9 +4,10 @@ using Microsoft.Extensions.Caching.Memory;
 using ProjectName.Core;
 using ProjectName.DataAccess;
 
-using RS.Dapper.Utility;
 using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;
+using RS.Dapper.Utility.Repositories.DapperExecutor;
+using RS.Dapper.Utility.Repositories.DapperRepository;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -19,6 +20,7 @@ builder.Services.AddSwaggerGen();
 DbSchema.Initialize(builder.Configuration);
 builder.Services.AddSingleton<DapperContext>(); // Or Scoped/Transient based on your design
 builder.Services.AddScoped<IDapperRepository, DapperRepository>();
+builder.Services.AddScoped<IDapperExecutor, DapperExecutor>();
 //End-RS.Dapper.Utility
 
 builder.Services.RS_DataAccessDependencyInjections(builder.Configuration);
