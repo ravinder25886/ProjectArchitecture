@@ -1,4 +1,4 @@
-namespace ProjectName.Utilities.Helpers
+namespace RS.Utilities.Helpers
 {
     //
     public static class FileHelper

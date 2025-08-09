@@ -1,4 +1,4 @@
-namespace ProjectName.Utilities.Helpers;
+namespace RS.Utilities.Helpers;
 /// <summary>
 /// Add your email helper code such as validations etc
 /// </summary>

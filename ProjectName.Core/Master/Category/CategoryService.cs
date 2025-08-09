@@ -1,7 +1,7 @@
 using ProjectName.DataAccess.Master.Category;
 using ProjectName.Models;
 using ProjectName.Models.Master;
-using ProjectName.Utilities.BaseResponseModel;
+using RS.Utilities.BaseResponseModel;
 
 namespace ProjectName.Core.Master.Category;
 public class CategoryService(ICategoryRepository categoryRepository):ICategoryService

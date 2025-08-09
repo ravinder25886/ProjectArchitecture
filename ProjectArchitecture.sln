@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Utilities", "ProjectName.Utilities\ProjectName.Utilities.csproj", "{285D4AF4-167B-4157-8CA6-D440EABC5155}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RS.Utilities", "ProjectName.Utilities\RS.Utilities.csproj", "{285D4AF4-167B-4157-8CA6-D440EABC5155}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.ClientApp", "ProjectName.ClientApp\ProjectName.ClientApp.csproj", "{5D920D14-06B2-4CFC-B195-1791390C53DC}"
 EndProject

@@ -2,7 +2,7 @@
 
 using ProjectName.DataAccess.User;
 using ProjectName.Models.Account;
-using ProjectName.Utilities.BaseResponseModel;
+using RS.Utilities.BaseResponseModel;
 
 namespace ProjectName.Core.User;
 public class UserService(IUserRepository userRepository) : IUserService
