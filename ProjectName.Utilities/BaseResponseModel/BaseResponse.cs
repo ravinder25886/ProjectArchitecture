@@ -1,6 +1,6 @@
-using ProjectName.Utilities.BaseResponseModel.Error;
+using RS.Utilities.BaseResponseModel.Error;
 
-namespace ProjectName.Utilities.BaseResponseModel;
+namespace RS.Utilities.BaseResponseModel;
 public class BaseResponse<TResponse> : IErrorResponse
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.

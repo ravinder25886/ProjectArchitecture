@@ -4,8 +4,8 @@ using System.Data;
 using Dapper;
 
 using ProjectName.Models.Account;
-using ProjectName.Utilities.BaseResponseModel;
-using ProjectName.Utilities.Constants;
+using RS.Utilities.BaseResponseModel;
+using RS.Utilities.Constants;
 
 using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Repositories.DapperExecutor;

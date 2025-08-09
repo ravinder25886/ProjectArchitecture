@@ -1,5 +1,5 @@
 using ProjectName.Models.Master;
-using ProjectName.Utilities.BaseResponseModel;
+using RS.Utilities.BaseResponseModel;
 
 namespace ProjectName.DataAccess.Master.Category;
 public interface ICategoryRepository
