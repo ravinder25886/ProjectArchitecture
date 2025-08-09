@@ -5,9 +5,9 @@ using RS.Dapper.Utility.Constants;
 namespace RS.Dapper.Utility.Connections;
 public static class DbSchema
 {
-        private const string Schema = "dbo";
+      //  private const string Schema = "dbo";
      //private const string Schema = "";// In MYSQL database case we canot use any Schema
-     //public const string Schema = "public";// In PostgreSql database case we canot use any Schema
+     public const string Schema = "public";// In PostgreSql database case we canot use any Schema
     // Tables
     public static string UserTable => GetTable($"User", Schema);
     public static string CategoryTable => GetTable($"Category",Schema);
