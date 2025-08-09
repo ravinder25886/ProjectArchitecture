@@ -1,4 +1,4 @@
-namespace ProjectName.Utilities.Constants;
+namespace RS.Utilities.Constants;
 public static class MainMessages
 {
     public static string WebAppName = "Chalk Talk: ";

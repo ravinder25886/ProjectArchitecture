@@ -1,4 +1,4 @@
-﻿namespace ProjectName.Utilities.Constants;
+namespace RS.Utilities.Constants;
 internal class ErrorMessages
 {
 }

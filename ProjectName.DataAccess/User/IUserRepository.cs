@@ -1,5 +1,5 @@
 using ProjectName.Models.Account;
-using ProjectName.Utilities.BaseResponseModel;
+using RS.Utilities.BaseResponseModel;
 
 namespace ProjectName.DataAccess.User;
 

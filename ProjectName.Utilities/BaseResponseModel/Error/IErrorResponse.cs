@@ -1,4 +1,4 @@
-namespace ProjectName.Utilities.BaseResponseModel.Error;
+namespace RS.Utilities.BaseResponseModel.Error;
 public interface IErrorResponse
 {   //Errors that we need to show to the user
 

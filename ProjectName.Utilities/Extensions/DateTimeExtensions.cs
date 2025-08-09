@@ -1,4 +1,4 @@
-namespace ProjectName.Utilities.Extensions;
+namespace RS.Utilities.Extensions;
 public static class DateTimeExtensions
 {
     // Check if a DateTime is a weekend

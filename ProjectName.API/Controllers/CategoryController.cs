@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectName.Core.Master.Category;
 using ProjectName.Models;
 using ProjectName.Models.Master;
-using ProjectName.Utilities.BaseResponseModel;
+using RS.Utilities.BaseResponseModel;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
