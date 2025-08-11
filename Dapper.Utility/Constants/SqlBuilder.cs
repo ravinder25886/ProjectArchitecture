@@ -63,7 +63,7 @@ public static class SqlBuilder
     /// </summary>
     private static string GetColumnList<T>(DatabaseType dbType)
     {
-        
+
         var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
           .Where(p => !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)));
 
@@ -393,7 +393,7 @@ public static class SqlBuilder
                 foreach (var filter in filters)
                 {
                     // Use a placeholder param name in SQL; actual param names will differ below
-                    
+
                     whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator.ToSqlString(dbType)} @{filter.Column}_{paramIndex++}");
                 }
             }
@@ -441,48 +441,74 @@ public static class SqlBuilder
         return (sql, parameters);
     }
     /// <summary>
-    /// Builds a parameterized SQL COUNT query with dynamic WHERE filters, supporting caching of the SQL query template.
+    /// Builds a single SQL query that retrieves both the total record count and a paginated data set
+    /// based on dynamic WHERE filters, using parameterized queries for SQL injection safety.
     /// </summary>
-    /// <param name="tableName">The name of the database table to query.</param>
-    /// <param name="filters">A list of filters specifying columns, operators, and values for the WHERE clause.</param>
-    /// <param name="dbType">The type of the target database (e.g., SqlServer, MySql, PostgreSql) for proper SQL syntax quoting.</param>
+    /// <typeparam name="T">
+    /// The type of the entity being queried. Used for determining the column list via <c>GetColumnList&lt;T&gt;</c>.
+    /// </typeparam>
+    /// <param name="tableName">
+    /// Name of the target database table.
+    /// </param>
+    /// <param name="filters">
+    /// Optional list of <see cref="SqlFilter"/> objects specifying column, operator, and value for filtering.
+    /// If null or empty, no WHERE clause will be added.
+    /// </param>
+    /// <param name="dbType">
+    /// The type of the target database (<see cref="DatabaseType.SqlServer"/>, <see cref="DatabaseType.MySql"/>, <see cref="DatabaseType.PostgreSql"/>).
+    /// Determines correct identifier quoting and pagination syntax.
+    /// </param>
+    /// <param name="pageSize">
+    /// The number of records to return per page. Defaults to 10.
+    /// </param>
+    /// <param name="pageNumber">
+    /// The page number to retrieve (1-based index). Defaults to 1.
+    /// </param>
+    /// <param name="orderBy">
+    /// Column name to order the results by. Defaults to "Id" for SQL Server if not specified.
+    /// </param>
+    /// <param name="sortDirection">
+    /// Sort direction: "ASC" or "DESC". Defaults to "ASC".
+    /// </param>
     /// <returns>
     /// A tuple containing:
-    ///   - The cached or newly generated SQL COUNT query string with parameter placeholders (cached by table name, filter columns, and operators).
-    ///   - A new <see cref="DynamicParameters"/> instance with uniquely named parameters and their corresponding values for safe parameterization.
+    /// <list type="bullet">
+    /// <item>
+    /// <description><c>Sql</c> — The full SQL statement containing two SELECT queries: one for total count, and one for paginated data.</description>
+    /// </item>
+    /// <item>
+    /// <description><c>Parameters</c> — A <see cref="DynamicParameters"/> object containing all parameter values for both queries.</description>
+    /// </item>
+    /// </list>
     /// </returns>
     /// <remarks>
-    /// The SQL query string is cached based on table name, database type, and the filter columns and operators, but NOT on filter values.
-    /// Filter values are always passed as fresh parameters to avoid cache collisions and ensure correct query execution.
-    /// Parameter names in the cached SQL are generic (e.g., '@ColumnName'), while the actual <see cref="DynamicParameters"/> use unique names (e.g., '@Column_0', '@Column_1').
-    /// This method ensures SQL injection safety by using parameterized queries.
+    /// <para>
+    /// This method combines two queries (COUNT + data) into a single SQL command, allowing both results to be
+    /// retrieved in one database round trip using <c>QueryMultiple</c> in Dapper.
+    /// </para>
+    /// <para>
+    /// Caching is applied to the generated SQL string based on table name, filters (columns + operators), ordering,
+    /// sort direction, page size, and page number. Filter values are excluded from the cache key.
+    /// </para>
     /// </remarks>
-    public static (string sql, DynamicParameters parameters) BuildCountQueryWithFilters(
-      string tableName,
-      List<SqlFilter> filters,
-      DatabaseType dbType)
+    public static (string Sql, DynamicParameters Parameters) BuildCountAndDataQueryWithParams<T>(
+     string tableName,
+     List<SqlFilter>? filters,
+     DatabaseType dbType,
+     int pageSize = 10,
+     int pageNumber = 1,
+     string? orderBy = "Id",
+     string sortDirection = "ASC"
+ )
     {
         string filtersKey = filters != null && filters.Any()
             ? string.Join(",", filters.Select(f => $"{f.Column}:{f.Operator}").OrderBy(s => s))
             : "nofilter";
 
-        string cacheKey = $"CountQuery:{tableName}:{dbType}:{filtersKey}";
+        string cacheKey = $"CountAndData:{typeof(T).FullName}:{tableName}:{dbType}:{filtersKey}:{orderBy}:{sortDirection}:{pageSize}:{pageNumber}";
 
-        // Get or build SQL string with generic parameter placeholders
         string sql = GetOrAddToCache(cacheKey, () =>
         {
-            string Quote(string name)
-            {
-                return dbType switch
-                {
-                    DatabaseType.SqlServer => $"[{name}]",
-                    DatabaseType.MySql => $"`{name}`",
-                    DatabaseType.PostgreSql => $"\"{name}\"",
-                    _ => name
-                };
-            }
-
-            //string quotedTable = Quote(tableName);
             List<string> whereClauses = new();
 
             if (filters != null && filters.Any())
@@ -490,57 +516,57 @@ public static class SqlBuilder
                 int paramIndex = 0;
                 foreach (var filter in filters)
                 {
-                    string paramName = $"@{filter.Column}_{paramIndex}";
-                    whereClauses.Add($"{Quote(filter.Column)} {filter.Operator.ToSqlString(dbType)} {paramName}");
-                    paramIndex++;
+                    whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator.ToSqlString(dbType)} @{filter.Column}_{paramIndex++}");
                 }
             }
 
             string whereClause = whereClauses.Count > 0
-                ? " WHERE " + string.Join(" AND ", whereClauses)
+                ? "WHERE " + string.Join(" AND ", whereClauses)
                 : "";
 
-            return $"SELECT COUNT(1) FROM {tableName}{whereClause};";
+            if (string.IsNullOrEmpty(orderBy) && dbType == DatabaseType.SqlServer)
+            {
+                orderBy = "Id";
+            }
+
+            string orderClause = !string.IsNullOrEmpty(orderBy)
+                ? $"ORDER BY {QuoteIdentifier(orderBy, dbType)} {sortDirection.ToUpper()}"
+                : "";
+
+            int offset = (pageNumber - 1) * pageSize;
+
+            string paginationClause = dbType switch
+            {
+                DatabaseType.SqlServer => $"OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
+                DatabaseType.MySql => $"LIMIT {pageSize} OFFSET {offset}",
+                DatabaseType.PostgreSql => $"LIMIT {pageSize} OFFSET {offset}",
+                _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
+            };
+
+            string columns = GetColumnList<T>(dbType);
+
+            // Return both count and data in one call
+            return $@"
+            SELECT COUNT(1) 
+            FROM {tableName} {whereClause};
+
+            SELECT {columns} 
+            FROM {tableName} {whereClause} {orderClause} {paginationClause};
+        ";
         });
 
-        // Build fresh DynamicParameters with unique param names per call
-        DynamicParameters parameters = new DynamicParameters();
+        DynamicParameters parameters = new();
         if (filters != null && filters.Any())
         {
-            for (int i = 0; i < filters.Count; i++)
+            int paramIndex = 0;
+            foreach (var filter in filters)
             {
-                var filter = filters[i];
-                string paramName = $"@{filter.Column}_{i}"; // unique param name
+                string paramName = $"@{filter.Column}_{paramIndex++}";
                 parameters.Add(paramName, filter.Value);
             }
         }
 
         return (sql, parameters);
-    }
-
-    /// <summary>
-    /// Appends a paging clause (ORDER BY + OFFSET/FETCH or LIMIT/OFFSET) to any SQL query.
-    /// </summary>
-    /// <param name="sql">Base SQL query (should NOT contain ORDER BY or paging)</param>
-    /// <param name="dbType">Database type</param>
-    /// <param name="pageSize">Number of records per page</param>
-    /// <param name="pageNumber">Page number (1-based)</param>
-    /// <param name="orderBy">Column name to order by (default "Id")</param>
-    /// <returns>SQL with appended paging clause</returns>
-    public static string AppendPaging(string sql, DatabaseType dbType, int pageSize, int pageNumber, string orderBy = "Id")
-    {
-        sql = sql.TrimEnd(';');
-        int offset = (pageNumber - 1) * pageSize;
-        string orderByQuoted = Quote(orderBy, dbType);
-
-        string pagingSql = dbType switch
-        {
-            DatabaseType.SqlServer => $"{sql} ORDER BY {orderByQuoted} OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
-            DatabaseType.MySql => $"{sql} ORDER BY {orderByQuoted} LIMIT {pageSize} OFFSET {offset}",
-            DatabaseType.PostgreSql => $"{sql} ORDER BY {orderByQuoted} LIMIT {pageSize} OFFSET {offset}",
-            _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
-        };
-        return pagingSql;
     }
 
 }

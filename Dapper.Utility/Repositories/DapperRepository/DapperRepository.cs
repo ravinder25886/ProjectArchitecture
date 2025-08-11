@@ -6,7 +6,7 @@ using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;
 
 namespace RS.Dapper.Utility.Repositories.DapperRepository;
-public class DapperRepository(DapperContext context): IDapperRepository
+public class DapperRepository(DapperContext context) : IDapperRepository
 {
     private readonly DapperContext _context = context;
     private readonly DatabaseType _databaseType = context.DbType;
@@ -37,7 +37,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The number of rows affected by the update.</returns>
     public async Task<int> UpdateAsync<T>(T model, string tableName, string keyColumn = "Id")
     {
-        var (sql, parameters) = SqlBuilder.BuildUpdate(model, tableName, _databaseType,keyColumn);
+        var (sql, parameters) = SqlBuilder.BuildUpdate(model, tableName, _databaseType, keyColumn);
         return await _connection.ExecuteAsync(sql, parameters);
     }
 
@@ -64,7 +64,7 @@ public class DapperRepository(DapperContext context): IDapperRepository
     /// <returns>The model instance if found; otherwise, null.</returns>
     public async Task<TModel?> GetByIdAsync<TModel, TId>(TId id, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildSelectById< TModel>(tableName, _databaseType, keyColumn);
+        string sql = SqlBuilder.BuildSelectById<TModel>(tableName, _databaseType, keyColumn);
         return await _connection.QuerySingleOrDefaultAsync<TModel>(sql, new { Id = id });
     }
 
@@ -90,34 +90,28 @@ public class DapperRepository(DapperContext context): IDapperRepository
                 filters.Add(item);
             }
         }
-
-        var (pagedSql, parameters) = SqlBuilder.BuildDynamicFilterQueryWithParams<T>(
-            tableName: tableName,
-            filters: filters,
-            dbType: _databaseType,
-            pageSize: pagedRequest.PageSize,
+        //Build a SQL query for paging data
+        var (sql, parameters) = SqlBuilder.BuildCountAndDataQueryWithParams<T>(
+            tableName,
+            filters,
+           _databaseType,
+            pageSize: pagedRequest.PageNumber,
             pageNumber: pagedRequest.PageNumber,
             orderBy: pagedRequest.OrderBy,
-            sortDirection: pagedRequest.SortDirection 
+            sortDirection: pagedRequest.SortDirection
         );
 
-        // 2. Get count SQL
-         var (countSql, countParameters) = SqlBuilder.BuildCountQueryWithFilters(
-            tableName: tableName,
-            filters: filters,
-            dbType: _databaseType
-        );
-
+        using var multi = await _connection.QueryMultipleAsync(sql, parameters);
         // Then use both with Dapper
-        int totalRecords =await _connection.ExecuteScalarAsync<int>(countSql, countParameters);
-        var data =await _connection.QueryAsync<T>(pagedSql, parameters);
+        int totalRecords = await multi.ReadFirstAsync<int>();
+        List<T> data = (await multi.ReadAsync<T>()).ToList();
 
         PagedResult<T> pagedResult = new PagedResult<T>
         {
-            Items= (List<T>)data,
-            PageNumber= pagedRequest.PageNumber,
-            PageSize= pagedRequest.PageSize,
-            TotalRecords=totalRecords
+            Items = (List<T>)data,
+            PageNumber = pagedRequest.PageNumber,
+            PageSize = pagedRequest.PageSize,
+            TotalRecords = totalRecords
         };
         return pagedResult;
     }
