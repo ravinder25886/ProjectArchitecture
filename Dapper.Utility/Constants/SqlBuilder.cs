@@ -63,7 +63,7 @@ public static class SqlBuilder
     /// </summary>
     private static string GetColumnList<T>(DatabaseType dbType)
     {
-        
+
         var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
           .Where(p => !Attribute.IsDefined(p, typeof(IgnoreParamAttribute)));
 
@@ -363,6 +363,84 @@ public static class SqlBuilder
         });
     }
     /// <summary>
+    /// Builds a SELECT query with dynamic WHERE filters and returns both SQL and DynamicParameters based on database type.
+    /// </summary>
+    public static (string Sql, DynamicParameters Parameters) BuildDynamicFilterQueryWithParams<T>(
+       string tableName,
+       List<SqlFilter>? filters,
+       DatabaseType dbType,
+       int pageSize = 10,
+       int pageNumber = 1,
+       string? orderBy = "Id",
+       string sortDirection = "ASC"
+   )
+    {
+        // Prepare cache key based on tableName, dbType, and filters' column+operator only
+        string filtersKey = filters != null && filters.Any()
+            ? string.Join(",", filters.Select(f => $"{f.Column}:{f.Operator}").OrderBy(s => s))
+            : "nofilter";
+
+        string cacheKey = $"DynamicFilterQuery:{typeof(T).FullName}:{tableName}:{dbType}:{filtersKey}:{orderBy}:{sortDirection}:{pageSize}:{pageNumber}";
+
+        // Use GetOrAddToCache to get or build the SQL string (no params here)
+        string sql = GetOrAddToCache(cacheKey, () =>
+        {
+            List<string> whereClauses = new List<string>();
+
+            if (filters != null && filters.Any())
+            {
+                int paramIndex = 0;
+                foreach (var filter in filters)
+                {
+                    // Use a placeholder param name in SQL; actual param names will differ below
+
+                    whereClauses.Add($"{QuoteIdentifier(filter.Column, dbType)} {filter.Operator.ToSqlString(dbType)} @{filter.Column}_{paramIndex++}");
+                }
+            }
+
+            string whereClause = whereClauses.Count > 0
+                ? "WHERE " + string.Join(" AND ", whereClauses)
+                : "";
+
+            if (string.IsNullOrEmpty(orderBy) && dbType == DatabaseType.SqlServer)
+            {
+                orderBy = "Id";
+            }
+
+            string orderClause = !string.IsNullOrEmpty(orderBy)
+                ? $"ORDER BY {QuoteIdentifier(orderBy, dbType)} {sortDirection.ToUpper()}"
+                : "";
+
+            int offset = (pageNumber - 1) * pageSize;
+
+            string paginationClause = dbType switch
+            {
+                DatabaseType.SqlServer => $"OFFSET {offset} ROWS FETCH NEXT {pageSize} ROWS ONLY",
+                DatabaseType.MySql => $"LIMIT {pageSize} OFFSET {offset}",
+                DatabaseType.PostgreSql => $"LIMIT {pageSize} OFFSET {offset}",
+                _ => throw new NotSupportedException($"Unsupported database type: {dbType}")
+            };
+
+            string columns = GetColumnList<T>(dbType);
+
+            return $"SELECT {columns} FROM {tableName} {whereClause} {orderClause} {paginationClause};";
+        });
+
+        // Build fresh parameters with unique names for this call (to avoid conflicts)
+        DynamicParameters parameters = new DynamicParameters();
+        if (filters != null && filters.Any())
+        {
+            int paramIndex = 0;
+            foreach (var filter in filters)
+            {
+                string paramName = $"@{filter.Column}_{paramIndex++}";
+                parameters.Add(paramName, filter.Value);
+            }
+        }
+
+        return (sql, parameters);
+    }
+    /// <summary>
     /// Builds a single SQL query that retrieves both the total record count and a paginated data set
     /// based on dynamic WHERE filters, using parameterized queries for SQL injection safety.
     /// </summary>
@@ -414,14 +492,14 @@ public static class SqlBuilder
     /// </para>
     /// </remarks>
     public static (string Sql, DynamicParameters Parameters) BuildCountAndDataQueryWithParams<T>(
-    string tableName,
-    List<SqlFilter>? filters,
-    DatabaseType dbType,
-    int pageSize = 10,
-    int pageNumber = 1,
-    string? orderBy = "Id",
-    string sortDirection = "ASC"
-)
+     string tableName,
+     List<SqlFilter>? filters,
+     DatabaseType dbType,
+     int pageSize = 10,
+     int pageNumber = 1,
+     string? orderBy = "Id",
+     string sortDirection = "ASC"
+ )
     {
         string filtersKey = filters != null && filters.Any()
             ? string.Join(",", filters.Select(f => $"{f.Column}:{f.Operator}").OrderBy(s => s))
@@ -490,4 +568,5 @@ public static class SqlBuilder
 
         return (sql, parameters);
     }
+
 }

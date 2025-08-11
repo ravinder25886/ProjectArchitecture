@@ -19,8 +19,4 @@
     <ProjectReference Include="..\ProjectName.Utilities\RS.Utilities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Constants\" />
-  </ItemGroup>
-
 </Project>
