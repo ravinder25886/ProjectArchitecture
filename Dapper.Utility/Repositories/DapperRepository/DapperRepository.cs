@@ -95,7 +95,7 @@ public class DapperRepository(DapperContext context) : IDapperRepository
             tableName,
             filters,
            _databaseType,
-            pageSize: pagedRequest.PageNumber,
+            pageSize: pagedRequest.PageSize,
             pageNumber: pagedRequest.PageNumber,
             orderBy: pagedRequest.OrderBy,
             sortDirection: pagedRequest.SortDirection
