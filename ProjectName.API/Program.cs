@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 using ProjectName.Core;
 using ProjectName.DataAccess;
+using ProjectName.DataAccess.Constants;
 
 using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;

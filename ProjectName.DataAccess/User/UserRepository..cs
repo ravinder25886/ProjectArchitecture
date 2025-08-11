@@ -1,14 +1,11 @@
 
 using System.Data;
-
 using Dapper;
-
 using ProjectName.Models.Account;
 using RS.Utilities.BaseResponseModel;
 using RS.Utilities.Constants;
-
-using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Repositories.DapperExecutor;
+using ProjectName.DataAccess.Constants;
 
 namespace ProjectName.DataAccess.User;
 public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
