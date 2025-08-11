@@ -64,4 +64,20 @@ public class DapperExecutor(DapperContext context) : IDapperExecutor
         using var connection = _context.CreateConnection();
         return await connection.QueryAsync<T>(sql, param, commandType: commandType);
     }
+      /// <summary>
+      /// Executes a query asynchronously that returns multiple result sets.
+      /// This method uses Dapper's QueryMultipleAsync and allows reading multiple sequences from a single command.
+      /// </summary>
+      /// <param name="sql">The SQL query or stored procedure name to execute.</param>
+      /// <param name="param">An optional object containing parameters to pass to the query.</param>
+      /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
+      /// <returns>
+      /// A <see cref="SqlMapper.GridReader"/> instance that can be used to read multiple result sets.
+      /// The caller is responsible for disposing the GridReader after reading all results.
+      /// </returns>
+    public async Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object? param = null, CommandType commandType = CommandType.Text)
+    {
+        using var connection = _context.CreateConnection();
+        return await connection.QueryMultipleAsync(sql, param, commandType: commandType);
+    }
 }

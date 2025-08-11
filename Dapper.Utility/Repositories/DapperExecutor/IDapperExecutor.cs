@@ -1,5 +1,7 @@
 using System.Data;
 
+using Dapper;
+
 namespace RS.Dapper.Utility.Repositories.DapperExecutor;
 /// <summary>
 /// Provides generic methods to execute SQL commands and queries using Dapper.
@@ -45,4 +47,16 @@ public interface IDapperExecutor
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
     /// <returns>An enumerable collection of records mapped to type T.</returns>
     public Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = null, CommandType commandType = CommandType.Text);
+    /// <summary>
+    /// Executes a query asynchronously that returns multiple result sets.
+    /// This method uses Dapper's QueryMultipleAsync and allows reading multiple sequences from a single command.
+    /// </summary>
+    /// <param name="sql">The SQL query or stored procedure name to execute.</param>
+    /// <param name="param">An optional object containing parameters to pass to the query.</param>
+    /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
+    /// <returns>
+    /// A <see cref="SqlMapper.GridReader"/> instance that can be used to read multiple result sets.
+    /// The caller is responsible for disposing the GridReader after reading all results.
+    /// </returns>
+    public Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object? param = null, CommandType commandType = CommandType.Text);
 }
