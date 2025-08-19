@@ -14,7 +14,7 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     public async Task<BaseResponse<int>> CreateAsync(UserModel user)
     {
         // ID is marked [IgnoreParam], so won't be sent
-        await _dapperExecutor.ExecuteAsync(DbSchema.UserInsertProc, user.ToParametersForInsert(), commandType: CommandType.StoredProcedure);
+        await _dapperExecutor.ExecuteAsync(DbSchema.UserInsertProc, user.ToParametersForInsert());
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("user") };
     }
 
@@ -32,18 +32,18 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     {
         DynamicParameters parameters = new DynamicParameters();
         //parameters.Add("@SearchText","search text");// If we want then we can add Parameters also 
-        return new BaseResponse<IEnumerable<UserModel>> { IsSuccess = true, Data = await _dapperExecutor.QueryAsync<UserModel>(DbSchema.UserGetAllProc, parameters, commandType: CommandType.Text) };
+        return new BaseResponse<IEnumerable<UserModel>> { IsSuccess = true, Data = await _dapperExecutor.QueryAsync<UserModel>(DbSchema.UserGetAllProc, parameters) };
     }
 
     public async Task<BaseResponse<UserModel>> GetByIdAsync(int id)
     {
-        var result = await _dapperExecutor.QueryFirstOrDefaultAsync<UserModel>(DbSchema.UserGetByIdProc, new { Id = id }, commandType: CommandType.StoredProcedure);
+        var result = await _dapperExecutor.QueryFirstOrDefaultAsync<UserModel>(DbSchema.UserGetByIdProc, new { Id = id });
         return BaseResponse<UserModel>.FromData(result, null);
     }
 
     public async Task<BaseResponse<int>> UpdateAsync(UserModel user)
     {
-        await _dapperExecutor.ExecuteAsync(DbSchema.UserUpdateProc, user.ToParametersForUpdate(), commandType: CommandType.StoredProcedure);
+        await _dapperExecutor.ExecuteAsync(DbSchema.UserUpdateProc, user.ToParametersForUpdate());
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("user") };
     }
 }
