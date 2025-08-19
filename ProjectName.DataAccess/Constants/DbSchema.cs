@@ -6,9 +6,9 @@ using RS.Dapper.Utility.Constants;
 namespace ProjectName.DataAccess.Constants;
 public static class DbSchema
 {
-    //private const string Schema = "dbo";
+    private const string _schema = "dbo";
     //private const string _schema = "";// In MYSQL database case we canot use any Schema
-    public static readonly string _schema = "public";// In PostgreSql database case we canot use any Schema
+    //public static readonly string _schema = "public";// In PostgreSql database case we canot use any Schema
 
     private static DatabaseType _dbType = DatabaseType.SqlServer;
     public static void Initialize(IConfiguration configuration)

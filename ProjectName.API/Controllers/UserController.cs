@@ -58,8 +58,10 @@ public class UserController(IUserService userService) : ControllerBase
 
     // DELETE api/<UserController>/5
     [HttpDelete("{id}")]
-    public void Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
+        BaseResponse<bool> response = await _userService.DeleteAsync(id);
+        return response.IsSuccess ? Ok(response) : BadRequest(response);
     }
 }
 public class UserRequest
