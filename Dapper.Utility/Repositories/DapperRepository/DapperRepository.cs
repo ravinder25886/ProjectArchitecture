@@ -1,17 +1,11 @@
-using System.Data;
-
 using Dapper;
-
-using RS.Dapper.Utility.Connections;
 using RS.Dapper.Utility.Constants;
+using RS.Dapper.Utility.Resolver;
 
 namespace RS.Dapper.Utility.Repositories.DapperRepository;
-public class DapperRepository(DapperContext context) : IDapperRepository
+public class DapperRepository(IDatabaseResolver databaseResolver) : IDapperRepository
 {
-    private readonly DapperContext _context = context;
-    private readonly DatabaseType _databaseType = context.DbType;
-    // Reusable connection property
-    protected IDbConnection _connection => _context.CreateConnection();
+    private readonly IDatabaseResolver _databaseResolver = databaseResolver;
 
     /// <summary>
     /// Inserts a new record into the specified table and returns the newly generated primary key.
@@ -21,10 +15,11 @@ public class DapperRepository(DapperContext context) : IDapperRepository
     /// <param name="tableName">The name of the target table (with schema if needed).</param>
     /// <param name="keyColumn">The primary key column name (default is "Id").</param>
     /// <returns>The primary key value of the newly inserted record.</returns>
-    public async Task<int> InsertAsync<T>(T model, string tableName, string keyColumn = "Id")
+    public async Task<int> InsertAsync<T>(T model, string dbNameKey, string tableName, string keyColumn = "Id")
     {
-        var (sql, parameters) = SqlBuilder.BuildInsert(model, tableName, _databaseType, keyColumn);
-        return await _connection.ExecuteScalarAsync<int>(sql, parameters);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        var (sql, parameters) = SqlBuilder.BuildInsert(model, tableName, _databaseResolver.GetDatabaseType(dbNameKey), keyColumn);
+        return await conn.ExecuteScalarAsync<int>(sql, parameters);
     }
 
     /// <summary>
@@ -35,10 +30,12 @@ public class DapperRepository(DapperContext context) : IDapperRepository
     /// <param name="tableName">The name of the target table (with schema if needed).</param>
     /// <param name="keyColumn">The primary key column name (default is "Id").</param>
     /// <returns>The number of rows affected by the update.</returns>
-    public async Task<int> UpdateAsync<T>(T model, string tableName, string keyColumn = "Id")
+    public async Task<int> UpdateAsync<T>(T model, string dbNameKey, string tableName, string keyColumn = "Id")
     {
-        var (sql, parameters) = SqlBuilder.BuildUpdate(model, tableName, _databaseType, keyColumn);
-        return await _connection.ExecuteAsync(sql, parameters);
+       
+        var (sql, parameters) = SqlBuilder.BuildUpdate(model, tableName, _databaseResolver.GetDatabaseType(dbNameKey), keyColumn);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        return await conn.ExecuteAsync(sql, parameters);
     }
 
     /// <summary>
@@ -48,10 +45,11 @@ public class DapperRepository(DapperContext context) : IDapperRepository
     /// <param name="id">The primary key value of the record to delete.</param>
     /// <param name="keyColumn">The primary key column name (default is "Id").</param>
     /// <returns>The number of rows affected by the delete operation.</returns>
-    public async Task<int> DeleteAsync(object id, string tableName, string keyColumn = "Id")
+    public async Task<int> DeleteAsync(object id, string dbNameKey, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildDelete(tableName, _databaseType, keyColumn);
-        return await _connection.ExecuteAsync(sql, new { Id = id });
+        string sql = SqlBuilder.BuildDelete(tableName, _databaseResolver.GetDatabaseType(dbNameKey), keyColumn);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        return await conn.ExecuteAsync(sql, new { Id = id });
     }
 
     /// <summary>
@@ -62,10 +60,11 @@ public class DapperRepository(DapperContext context) : IDapperRepository
     /// <param name="tableName">The name of the target table (with schema if needed).</param>
     /// <param name="keyColumn">The primary key column name (default is "Id").</param>
     /// <returns>The model instance if found; otherwise, null.</returns>
-    public async Task<TModel?> GetByIdAsync<TModel, TId>(TId id, string tableName, string keyColumn = "Id")
+    public async Task<TModel?> GetByIdAsync<TModel, TId>(TId id, string dbNameKey, string tableName, string keyColumn = "Id")
     {
-        string sql = SqlBuilder.BuildSelectById<TModel>(tableName, _databaseType, keyColumn);
-        return await _connection.QuerySingleOrDefaultAsync<TModel>(sql, new { Id = id });
+        string sql = SqlBuilder.BuildSelectById<TModel>(tableName, _databaseResolver.GetDatabaseType(dbNameKey), keyColumn);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        return await conn.QuerySingleOrDefaultAsync<TModel>(sql, new { Id = id });
     }
 
     /// <summary>
@@ -74,13 +73,14 @@ public class DapperRepository(DapperContext context) : IDapperRepository
     /// <typeparam name="T">The model type representing the table structure.</typeparam>
     /// <param name="tableName">The name of the target table (with schema if needed).</param>
     /// <returns>An enumerable of all records in the table.</returns>
-    public async Task<IEnumerable<T>> GetAllAsync<T>(string tableName)
+    public async Task<IEnumerable<T>> GetAllAsync<T>(string dbNameKey, string tableName)
     {
-        string sql = SqlBuilder.BuildSelectAll<T>(tableName, _databaseType);
-        return await _connection.QueryAsync<T>(sql);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        string sql = SqlBuilder.BuildSelectAll<T>(tableName, _databaseResolver.GetDatabaseType(dbNameKey));
+        return await conn.QueryAsync<T>(sql);
     }
 
-    public async Task<PagedResult<T>> GetPagedDataAsync<T>(string tableName, PagedRequest pagedRequest)
+    public async Task<PagedResult<T>> GetPagedDataAsync<T>(string dbNameKey, string tableName, PagedRequest pagedRequest)
     {
         List<SqlFilter> filters = new List<SqlFilter>();
         foreach (var item in pagedRequest.Filters)
@@ -94,14 +94,14 @@ public class DapperRepository(DapperContext context) : IDapperRepository
         var (sql, parameters) = SqlBuilder.BuildCountAndDataQueryWithParams<T>(
             tableName,
             filters,
-           _databaseType,
+           _databaseResolver.GetDatabaseType(dbNameKey),
             pageSize: pagedRequest.PageSize,
             pageNumber: pagedRequest.PageNumber,
             orderBy: pagedRequest.OrderBy,
             sortDirection: pagedRequest.SortDirection
         );
-
-        using var multi = await _connection.QueryMultipleAsync(sql, parameters);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        using var multi = await conn.QueryMultipleAsync(sql, parameters);
         // Then use both with Dapper
         int totalRecords = await multi.ReadFirstAsync<int>();
         List<T> data = (await multi.ReadAsync<T>()).ToList();

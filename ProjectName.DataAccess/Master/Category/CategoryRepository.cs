@@ -10,17 +10,17 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
     private readonly IDapperRepository _dapperRepository = dapperRepository;
     public async Task<BaseResponse<int>> CreateAsync(CategoryModel request)
     {
-        int id = await _dapperRepository.InsertAsync(request, DbSchema.CategoryTable);
+        int id = await _dapperRepository.InsertAsync(request,DbSchema.CategoriesDbNameKey, DbSchema.CategoryTable);
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("category"),Data=id };
     }
     public async Task<BaseResponse<int>> UpdateAsync(CategoryModel request)
     {
-         await _dapperRepository.UpdateAsync(request, DbSchema.CategoryTable);
+         await _dapperRepository.UpdateAsync(request, DbSchema.CategoriesDbNameKey, DbSchema.CategoryTable);
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("category") };
     }
     public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {
-        await _dapperRepository.DeleteAsync(id, DbSchema.CategoryTable);
+        await _dapperRepository.DeleteAsync(id, DbSchema.CategoriesDbNameKey, DbSchema.CategoryTable);
         return new BaseResponse<bool> { IsSuccess = true, Message = MainMessages.SubjectDeletedSuccess("category") };
     }
 
@@ -28,7 +28,7 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
     {
         return new BaseResponse<IEnumerable<CategoryResponse>>
         {
-            Data = await _dapperRepository.GetAllAsync<CategoryResponse>(DbSchema.CategoryTable),
+            Data = await _dapperRepository.GetAllAsync<CategoryResponse>(DbSchema.CategoriesDbNameKey, DbSchema.CategoryTable),
             IsSuccess=true
         };
 
@@ -36,7 +36,7 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
 
     public async Task<BaseResponse<CategoryModel>> GetByIdAsync(int id)
     {
-        var data=  await _dapperRepository.GetByIdAsync<CategoryModel,int>(id, DbSchema.CategoryTable);
+        var data=  await _dapperRepository.GetByIdAsync<CategoryModel,int>(id, DbSchema.CategoriesDbNameKey, DbSchema.CategoryTable);
         return BaseResponse<CategoryModel>.FromData(data, null);
     }
 
@@ -44,7 +44,7 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
     {
         return new BaseResponse<PagedResult<CategoryResponse>>
         {
-            Data=await _dapperRepository.GetPagedDataAsync<CategoryResponse>(DbSchema.CategoryTable, pagedRequest),
+            Data=await _dapperRepository.GetPagedDataAsync<CategoryResponse>(DbSchema.CategoriesDbNameKey, DbSchema.CategoryTable, pagedRequest),
             IsSuccess=true
         };
     }
