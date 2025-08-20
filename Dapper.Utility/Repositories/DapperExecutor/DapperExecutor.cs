@@ -1,13 +1,17 @@
 using System.Data;
+
 using Dapper;
+
 using RS.Dapper.Utility.Connections;
+using RS.Dapper.Utility.Resolver;
 
 namespace RS.Dapper.Utility.Repositories.DapperExecutor;
 /// <summary>
 /// Provides generic methods to execute SQL commands and queries using Dapper.
 /// </summary>
-public class DapperExecutor(DapperContext context) : IDapperExecutor
+public class DapperExecutor(IDatabaseResolver databaseResolver,DapperContext context) : IDapperExecutor
 {
+    private readonly IDatabaseResolver _databaseResolver = databaseResolver;
     private readonly DapperContext _context = context;
     /// <summary>
     /// Executes a command asynchronously that does not return a result set.
@@ -17,10 +21,10 @@ public class DapperExecutor(DapperContext context) : IDapperExecutor
     /// <param name="param">An optional object containing parameters to pass to the command.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
     /// <returns>The number of rows affected.</returns>
-    public async Task<int> ExecuteAsync(string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<int> ExecuteAsync(string dbNameKey,string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
     {
-        using var _connection = _context.CreateConnection();
-        return await _connection.ExecuteAsync(sql, param, commandType: commandType);
+        using var conn = _databaseResolver.GetConnection(dbNameKey);
+        return await conn.ExecuteAsync(sql, param, commandType: commandType);
     }
     /// <summary>
     /// Executes a command asynchronously that returns a single scalar value.
@@ -31,9 +35,9 @@ public class DapperExecutor(DapperContext context) : IDapperExecutor
     /// <param name="param">An optional object containing parameters to pass to the command.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
     /// <returns>The scalar result cast to type T.</returns>
-    public async Task<T?> ExecuteScalarAsync<T>(string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<T?> ExecuteScalarAsync<T>(string dbNameKey, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
     {
-        using var connection = _context.CreateConnection();
+        using var connection = _databaseResolver.GetConnection(dbNameKey);
         return await connection.ExecuteScalarAsync<T>(sql, param, commandType: commandType);
     }
     /// <summary>
@@ -45,9 +49,9 @@ public class DapperExecutor(DapperContext context) : IDapperExecutor
     /// <param name="param">An optional object containing parameters to pass to the query.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
     /// <returns>The first record mapped to type T, or null if no records found.</returns>
-    public async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<T?> QueryFirstOrDefaultAsync<T>(string dbNameKey, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
     {
-        using var connection = _context.CreateConnection();
+        using var connection = _databaseResolver.GetConnection(dbNameKey);
         return await connection.QueryFirstOrDefaultAsync<T>(sql, param, commandType: commandType);
     }
     /// <summary>
@@ -59,9 +63,9 @@ public class DapperExecutor(DapperContext context) : IDapperExecutor
     /// <param name="param">An optional object containing parameters to pass to the query.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
     /// <returns>An enumerable collection of records mapped to type T.</returns>
-    public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<IEnumerable<T>> QueryAsync<T>(string dbNameKey, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
     {
-        using var connection = _context.CreateConnection();
+        using var connection = _databaseResolver.GetConnection(dbNameKey);
         return await connection.QueryAsync<T>(sql, param, commandType: commandType);
     }
       /// <summary>
@@ -75,9 +79,9 @@ public class DapperExecutor(DapperContext context) : IDapperExecutor
       /// A <see cref="SqlMapper.GridReader"/> instance that can be used to read multiple result sets.
       /// The caller is responsible for disposing the GridReader after reading all results.
       /// </returns>
-    public async Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<SqlMapper.GridReader> QueryMultipleAsync(string dbNameKey, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
     {
-        using var connection = _context.CreateConnection();
+        using var connection = _databaseResolver.GetConnection(dbNameKey);
         return await connection.QueryMultipleAsync(sql, param, commandType: commandType);
     }
 }
