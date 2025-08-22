@@ -4,12 +4,9 @@ using Microsoft.Extensions.Caching.Memory;
 using ProjectName.Core;
 using ProjectName.DataAccess;
 using ProjectName.DataAccess.Constants;
-
-using RS.Dapper.Utility.Connections;
+using RS.Dapper.Utility;
 using RS.Dapper.Utility.Constants;
-using RS.Dapper.Utility.Repositories.DapperExecutor;
-using RS.Dapper.Utility.Repositories.DapperRepository;
-using RS.Dapper.Utility.Resolver;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -20,16 +17,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //Set DbSchema for RS_DapperUtility
 DbSchema.Initialize(builder.Configuration);
-builder.Services.AddSingleton<DapperContext>(); // Or Scoped/Transient based on your design
-builder.Services.AddScoped<IDatabaseResolver, DatabaseResolver>();
-builder.Services.AddScoped<IDapperRepository, DapperRepository>();
-builder.Services.AddScoped<IDapperExecutor, DapperExecutor>();
+//Inject RS_DapperUtilityDependencyInjections
+builder.Services.RS_DapperUtilityDependencyInjections(builder.Configuration);
+
 //End-RS.Dapper.Utility
 
 //****Inject RS_DapperUtilityDependencyInjections
 builder.Services.RS_DataAccessDependencyInjections(builder.Configuration);
 builder.Services.RS_CoreDependencyInjections(builder.Configuration);
-
 //setup SqlBuilder IMemoryCache
 builder.Services.AddMemoryCache();
 var app = builder.Build();

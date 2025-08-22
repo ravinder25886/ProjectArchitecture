@@ -8,12 +8,18 @@ namespace ProjectName.DataAccess.Constants;
 public static class DbSchema
 {
     private static Dictionary<string, DatabaseConfig>? _configs;
-
-    public const string UsersDbNameKey = "UsersDb";
+    // -----------------------------
+    // Database Names (for config/lookup)
+    // -----------------------------
+    public const string UsersDbName = "UsersDb";
+    public const string CategoriesDbName = "CategoriesDb";
+    public const string ProductsDbName = "ProductsDb";
+    // -----------------------------
+    // Schemas (internal)
+    // -----------------------------
     private const string _userDbSchema = "dbo";
-
-    public const string CategoriesDbNameKey = "CategoriesDb";
-    private const string _categoriesDbSchema = "";
+    private const string _categoriesDbSchema = "";// MySQL has no schema
+    private const string _productsDbSchema = "public"; // PostgreSQL
 
     private static DatabaseType _userDBType = DatabaseType.SqlServer;
     private static DatabaseType _categoriesDBType = DatabaseType.SqlServer;
