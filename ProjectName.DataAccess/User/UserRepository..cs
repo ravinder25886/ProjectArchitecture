@@ -14,13 +14,13 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     public async Task<BaseResponse<int>> CreateAsync(UserModel user)
     {
         // ID is marked [IgnoreParam], so won't be sent
-        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbNameKey, DbSchema.UserInsertProc, user.ToParametersForInsert());
+        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserInsertProc, user.ToParametersForInsert());
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("user") };
     }
 
     public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {
-        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbNameKey,
+        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName,
            DbSchema.UserDeleteProc,
            new { Id = id },
            commandType: CommandType.StoredProcedure
@@ -32,18 +32,18 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     {
         DynamicParameters parameters = new DynamicParameters();
         //parameters.Add("@SearchText","search text");// If we want then we can add Parameters also 
-        return new BaseResponse<IEnumerable<UserModel>> { IsSuccess = true, Data = await _dapperExecutor.QueryAsync<UserModel>(DbSchema.UsersDbNameKey, DbSchema.UserGetAllProc, parameters) };
+        return new BaseResponse<IEnumerable<UserModel>> { IsSuccess = true, Data = await _dapperExecutor.QueryAsync<UserModel>(DbSchema.UsersDbName, DbSchema.UserGetAllProc, parameters) };
     }
 
     public async Task<BaseResponse<UserModel>> GetByIdAsync(int id)
     {
-        var result = await _dapperExecutor.QueryFirstOrDefaultAsync<UserModel>(DbSchema.UsersDbNameKey, DbSchema.UserGetByIdProc, new { Id = id });
+        var result = await _dapperExecutor.QueryFirstOrDefaultAsync<UserModel>(DbSchema.UsersDbName, DbSchema.UserGetByIdProc, new { Id = id });
         return BaseResponse<UserModel>.FromData(result, null);
     }
 
     public async Task<BaseResponse<int>> UpdateAsync(UserModel user)
     {
-        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbNameKey, DbSchema.UserUpdateProc, user.ToParametersForUpdate());
+        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserUpdateProc, user.ToParametersForUpdate());
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("user") };
     }
 }
