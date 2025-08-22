@@ -32,23 +32,29 @@ dotnet add package RS.Dapper.Utility
 ## ⚡ Quick Start
 Add your database settings in appsettings.json.
 ``` javascript
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=DESKTOP-FFBIFD1\\SQLEXPRESS;Database=AppFoundationDb;Trusted_Connection=True;TrustServerCertificate=True;"
-   //"DefaultConnection": "server=000.000.00.000;User ID=rsinnov7_demo2025;password=xxxxxxxx;database=rsinnov7_demo2025;"//MYSQL
-   //"DefaultConnection": "Host=db.lkjinmrmovukgciyfvml.supabase.co;Database=postgres;Username=postgres;Password=gHfFvMjK1PTnaF8q;SSL Mode=Require;Trust Server Certificate=true" //PostgreSql
-  },
-  "DatabaseSettings": {
-    "Type": "SqlServer" //SqlServer/PostgreSql/MySql
-  } 
-}
+"Databases": {
+    "MealFormulaDb": {
+      "DbType": "SqlServer",
+      "ConnectionString": "Server=195.250.xx.xx;User ID=rsinnov7_mf;password=xxxxx;database=dbname;Encrypt=True;TrustServerCertificate=True;"
+    },
+    "CategoriesDb": {
+      "DbType": "MySql",
+      "ConnectionString": ""
+    },
+    "ProductsDb": {
+      "DbType": "PostgreSql",
+      "ConnectionString": ""
+    }
+  }
 
 ```
 ### 1. Register Services
 
 Add to your **Program.cs**:
+- **DbSchema.cs** serves as a bridge between the application code and **RS.Dapper.Utility**, centralizing database names, schemas, and table mappings for consistency and maintainability.
 - Download DbSchema.cs class from GitHub and add in your poroject [DbSchema.cs](https://github.com/ravinder25886/ProjectArchitecture/blob/main/ProjectName.DataAccess/Constants/DbSchema.cs)
 - Setup DbSchema for RS_DapperUtility, it is part of Utility but it is open to manage by developer as they have to add table(s)and proc(s) names
+
 ```csharp
 DbSchema.Initialize(builder.Configuration);
 ```
@@ -79,10 +85,10 @@ Please use ToParametersForInsert and ToParametersForUpdate, it helps for auto co
 ### 2. Example: Execute Stored Procedure
 
 ```csharp
-await _dapperExecutor.ExecuteAsync(
-    DbSchema.UserInsertProc,//"User_Insert",
-    user.ToParametersForInsert() 
-    );
+await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserInsertProc, user.ToParametersForInsert());
+await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName,DbSchema.UserDeleteProc,new { Id = id });
+await _dapperExecutor.QueryFirstOrDefaultAsync<UserModel>(DbSchema.UsersDbName, DbSchema.UserGetByIdProc, new { Id = id });
+await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserUpdateProc, user.ToParametersForUpdate());
 ```
 
 ---
@@ -98,12 +104,12 @@ With RS.Dapper.Utility, we can achieve all of this dynamically and cleanly — w
 
 🚀 OMG one line code and we are done with CURD 
 ```csharp
- await _dapperRepository.InsertAsync(request, DbSchema.CategoryTable);
- await _dapperRepository.UpdateAsync(request, DbSchema.CategoryTable);
- await _dapperRepository.DeleteAsync(id, DbSchema.CategoryTable);
- await _dapperRepository.GetAllAsync<CategoryResponse>(DbSchema.CategoryTable);
- await _dapperRepository.GetByIdAsync<CategoryModel,int>(id, DbSchema.CategoryTable);
- await _dapperRepository.GetPagedDataAsync<CategoryResponse>(DbSchema.CategoryTable, pagedRequest)
+ await _dapperRepository.InsertAsync(request,DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+ await _dapperRepository.UpdateAsync(request, DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+ await _dapperRepository.DeleteAsync(id, DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+ await _dapperRepository.GetAllAsync<CategoryResponse>(DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+ await _dapperRepository.GetByIdAsync<CategoryModel,int>(id, DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+ await _dapperRepository.GetPagedDataAsync<CategoryResponse>(DbSchema.CategoriesDbName, DbSchema.CategoryTable, pagedRequest);
 ```
 
 ---
@@ -111,31 +117,14 @@ With RS.Dapper.Utility, we can achieve all of this dynamically and cleanly — w
 ### 4. Query Multiple Result Sets with PROC
 
 ```csharp
-using var multi = await _dapperExecutor.QueryMultipleAsync(
-    "User_GetWithRoles",
-    new { Id = 1 },
-    commandType: CommandType.StoredProcedure
+using var multi = await _dapperExecutor.QueryMultipleAsync(DbSchema.CategoriesDbName,
+    DbSchema.UserGetWithRoles,
+    new { Id = 1 } 
 );
 
 var user = await multi.ReadFirstOrDefaultAsync<UserModel>();
 var roles = await multi.ReadAsync<RoleModel>();
 ```
-
----
-
-## 📂 Project Structure
-
-```
-Repositories/
-├── Executor/
-│   ├── IDapperExecutor.cs
-│   └── DapperExecutor.cs
-├── Repository/
-│   ├── IDapperRepository.cs
-│   └── DapperRepository.cs
-```
-
----
 
 ## ✅ License
 
@@ -180,6 +169,8 @@ You can download, customize, and enhance it:
 🔗 [Full Project on GitHub](https://github.com/ravinder25886/ProjectArchitecture/tree/main)
 
 🔥 If you’re a .NET developer looking for speed, flexibility, and clean database access with Dapper—RS.Dapper.Utility is built for you.
+
+🙋 [Frequently Asked Questions](https://www.theravinder.com/blog/rs-dapper-utility-faq-10060) 
 
 ☕ [Buy Me A Coffee](https://buymeacoffee.com/ravinder25z)
 Your support motivates me to keep adding more developer-friendly utilities 🚀
