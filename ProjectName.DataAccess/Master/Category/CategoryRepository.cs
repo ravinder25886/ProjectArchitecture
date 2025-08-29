@@ -10,17 +10,17 @@ public class CategoryRepository(IDapperRepository dapperRepository) :  ICategory
     private readonly IDapperRepository _dapperRepository = dapperRepository;
     public async Task<BaseResponse<int>> CreateAsync(CategoryModel request)
     {
-        int id = await _dapperRepository.InsertAsync(request,DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+        int id = await _dapperRepository.InsertAsync(request,DbSchema.CategoriesDbName, DbSchema.CategoryTable,transactionOn:true);
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("category"),Data=id };
     }
     public async Task<BaseResponse<int>> UpdateAsync(CategoryModel request)
     {
-         await _dapperRepository.UpdateAsync(request, DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+         await _dapperRepository.UpdateAsync(request, DbSchema.CategoriesDbName, DbSchema.CategoryTable, transactionOn: true);
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectUpdatedSuccess("category") };
     }
     public async Task<BaseResponse<bool>> DeleteAsync(int id)
     {
-        await _dapperRepository.DeleteAsync(id, DbSchema.CategoriesDbName, DbSchema.CategoryTable);
+        await _dapperRepository.DeleteAsync(id, DbSchema.CategoriesDbName, DbSchema.CategoryTable, transactionOn: true);
         return new BaseResponse<bool> { IsSuccess = true, Message = MainMessages.SubjectDeletedSuccess("category") };
     }
 

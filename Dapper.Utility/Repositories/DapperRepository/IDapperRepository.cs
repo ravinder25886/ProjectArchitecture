@@ -9,8 +9,12 @@ public interface IDapperRepository
     /// <param name="dbName">The name of the database. The system will use this to retrieve the connection string and database type from appsettings.</param>
     /// <param name="tableName">The name of the table where the record will be inserted.</param>
     /// <param name="keyColumn">The primary key column of the table (default is "Id").</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected or the newly generated Id depending on implementation.</returns>
-    public Task<int> InsertAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id");
+    public Task<int> InsertAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id", bool transactionOn = false);
 
     /// <summary>
     /// Updates an existing record in the specified table of the given database.
@@ -20,8 +24,12 @@ public interface IDapperRepository
     /// <param name="dbName">The name of the database. The system will use this to retrieve the connection string and database type from appsettings.</param>
     /// <param name="tableName">The name of the table to update.</param>
     /// <param name="keyColumn">The primary key column used to identify the record (default is "Id").</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected.</returns>
-    public Task<int> UpdateAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id");
+    public Task<int> UpdateAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id", bool transactionOn = false);
 
     /// <summary>
     /// Deletes a record from the specified table using its primary key.
@@ -30,8 +38,12 @@ public interface IDapperRepository
     /// <param name="dbName">The name of the database. The system will use this to retrieve the connection string and database type from appsettings.</param>
     /// <param name="tableName">The name of the table from which to delete the record.</param>
     /// <param name="keyColumn">The primary key column used to identify the record (default is "Id").</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected.</returns>
-    public Task<int> DeleteAsync(object id, string dbName, string tableName, string keyColumn = "Id");
+    public Task<int> DeleteAsync(object id, string dbName, string tableName, string keyColumn = "Id", bool transactionOn = false);
 
     /// <summary>
     /// Retrieves a single record from the specified table by its primary key.
