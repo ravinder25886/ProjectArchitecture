@@ -125,7 +125,24 @@ using var multi = await _dapperExecutor.QueryMultipleAsync(DbSchema.CategoriesDb
 var user = await multi.ReadFirstOrDefaultAsync<UserModel>();
 var roles = await multi.ReadAsync<RoleModel>();
 ```
+### 5 Optional Transaction Support
 
+- The DapperExecutor class now supports executing operations inside an optional database transaction using the transactionOn flag. This allows you to:
+- Wrap operations in a transaction automatically (commit/rollback handled by DapperExecutor).
+- Run multiple operations or stored procedures atomically.
+- Maintain a simple API without manually managing IDbTransaction.
+- Keep full compatibility with SQL Server, MySQL, and PostgreSQL.
+
+```csharp
+/// <param name="transactionOn">
+/// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+/// If false, the operation executes normally without a transaction.
+/// </param>
+//For SQL dapperRepository
+await _dapperRepository.InsertAsync(request,DbSchema.CategoriesDbName, DbSchema.CategoryTable,transactionOn:true);
+/// For Proc
+await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserInsertProc, user.ToParametersForInsert(),transactionOn:true);
+```
 ## ✅ License
 
 This project is licensed under the **MIT License**.

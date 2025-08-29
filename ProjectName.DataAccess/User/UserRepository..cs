@@ -14,7 +14,7 @@ public class UserRepository(IDapperExecutor dapperExecutor) : IUserRepository
     public async Task<BaseResponse<int>> CreateAsync(UserModel user)
     {
         // ID is marked [IgnoreParam], so won't be sent
-        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserInsertProc, user.ToParametersForInsert());
+        await _dapperExecutor.ExecuteAsync(DbSchema.UsersDbName, DbSchema.UserInsertProc, user.ToParametersForInsert(),transactionOn:true);
         return new BaseResponse<int> { IsSuccess = true, Message = MainMessages.SubjectCreatedSuccess("user") };
     }
 

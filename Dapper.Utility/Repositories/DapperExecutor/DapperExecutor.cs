@@ -11,6 +11,37 @@ namespace RS.Dapper.Utility.Repositories.DapperExecutor;
 public class DapperExecutor(IDatabaseResolver databaseResolver) : IDapperExecutor
 {
     private readonly IDatabaseResolver _databaseResolver = databaseResolver;
+
+    private async Task<T> ExecuteWithTransactionAsync<T>(
+    string dbName,
+    Func<IDbConnection, IDbTransaction?, Task<T>> func,
+    bool transactionOn)
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+
+            if (transactionOn)
+            {
+                connection.Open(); // required for transaction
+                using var transaction = connection.BeginTransaction();
+                try
+                {
+                    var result = await func(connection, transaction);
+                    transaction.Commit();
+                    return result;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+            else
+            {
+                connection.Open();
+                return await func(connection, null);
+            }
+        }
+
     /// <summary>
     /// Executes a command asynchronously that does not return a result set.
     /// Typically used for INSERT, UPDATE, DELETE statements or stored procedures.
@@ -19,11 +50,15 @@ public class DapperExecutor(IDatabaseResolver databaseResolver) : IDapperExecuto
     /// <param name="sql">The SQL command text or stored procedure name to execute.</param>
     /// <param name="param">An optional object containing parameters to pass to the command.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected.</returns>
-    public async Task<int> ExecuteAsync(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<int> ExecuteAsync(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure, bool transactionOn = false)
     {
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.ExecuteAsync(sql, param, commandType: commandType);
+        return await ExecuteWithTransactionAsync(dbName, (conn, trans) =>
+            conn.ExecuteAsync(sql, param, transaction: trans, commandType: commandType), transactionOn);
     }
     /// <summary>
     /// Executes a command asynchronously that returns a single scalar value.
@@ -34,11 +69,15 @@ public class DapperExecutor(IDatabaseResolver databaseResolver) : IDapperExecuto
     /// <param name="sql">The SQL command text or stored procedure name to execute.</param>
     /// <param name="param">An optional object containing parameters to pass to the command.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The scalar result cast to type T.</returns>
-    public async Task<T?> ExecuteScalarAsync<T>(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<T?> ExecuteScalarAsync<T>(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure, bool transactionOn = false)
     {
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.ExecuteScalarAsync<T>(sql, param, commandType: commandType);
+        return await ExecuteWithTransactionAsync(dbName, (conn, trans) =>
+           conn.ExecuteScalarAsync<T>(sql, param, transaction: trans, commandType: commandType), transactionOn);
     }
     /// <summary>
     /// Executes a query asynchronously that returns the first record or default if none found.
@@ -49,11 +88,16 @@ public class DapperExecutor(IDatabaseResolver databaseResolver) : IDapperExecuto
     /// <param name="sql">The SQL query or stored procedure name to execute.</param>
     /// <param name="param">An optional object containing parameters to pass to the query.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The first record mapped to type T, or null if no records found.</returns>
-    public async Task<T?> QueryFirstOrDefaultAsync<T>(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<T?> QueryFirstOrDefaultAsync<T>(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure, bool transactionOn = false)
     {
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.QueryFirstOrDefaultAsync<T>(sql, param, commandType: commandType);
+        return await ExecuteWithTransactionAsync(dbName, (conn, trans) =>
+            conn.QueryFirstOrDefaultAsync<T>(sql, param, transaction: trans, commandType: commandType), transactionOn);
+
     }
     /// <summary>
     /// Executes a query asynchronously that returns a collection of records.
@@ -64,11 +108,15 @@ public class DapperExecutor(IDatabaseResolver databaseResolver) : IDapperExecuto
     /// <param name="sql">The SQL query or stored procedure name to execute.</param>
     /// <param name="param">An optional object containing parameters to pass to the query.</param>
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>An enumerable collection of records mapped to type T.</returns>
-    public async Task<IEnumerable<T>> QueryAsync<T>(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<IEnumerable<T>> QueryAsync<T>(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure, bool transactionOn = false)
     {
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.QueryAsync<T>(sql, param, commandType: commandType);
+        return await ExecuteWithTransactionAsync(dbName, (conn, trans) =>
+             conn.QueryAsync<T>(sql, param, transaction: trans, commandType: commandType), transactionOn);
     }
     /// <summary>
     /// Executes a query asynchronously that returns multiple result sets.
@@ -80,11 +128,15 @@ public class DapperExecutor(IDatabaseResolver databaseResolver) : IDapperExecuto
     /// <param name="commandType">The type of command (Text or StoredProcedure). Default is Text.</param>
     /// <returns>
     /// A <see cref="SqlMapper.GridReader"/> instance that can be used to read multiple result sets.
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// The caller is responsible for disposing the GridReader after reading all results.
     /// </returns>
-    public async Task<SqlMapper.GridReader> QueryMultipleAsync(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure)
+    public async Task<SqlMapper.GridReader> QueryMultipleAsync(string dbName, string sql, object? param = null, CommandType commandType = CommandType.StoredProcedure, bool transactionOn = false)
     {
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.QueryMultipleAsync(sql, param, commandType: commandType);
+        return await ExecuteWithTransactionAsync(dbName, (conn, trans) =>
+          conn.QueryMultipleAsync(sql, param, transaction: trans, commandType: commandType), transactionOn);
     }
 }

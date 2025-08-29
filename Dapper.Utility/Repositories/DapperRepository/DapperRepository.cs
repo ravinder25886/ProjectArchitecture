@@ -16,12 +16,37 @@ public class DapperRepository(IDatabaseResolver databaseResolver) : IDapperRepos
     /// <param name="dbName">The name of the database. The system will use this to retrieve the connection string and database type from appsettings.</param>
     /// <param name="tableName">The name of the table where the record will be inserted.</param>
     /// <param name="keyColumn">The primary key column of the table (default is "Id").</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected or the newly generated Id depending on implementation.</returns>
-    public async Task<int> InsertAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id")
+    public async Task<int> InsertAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id", bool transactionOn = false)
     {
         var (sql, parameters) = SqlBuilder.BuildInsert(model, tableName, _databaseResolver.GetDatabaseType(dbName), keyColumn);
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.ExecuteScalarAsync<int>(sql, parameters);
+
+        if (transactionOn)
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+            connection.Open(); // synchronous
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                int newId = await connection.ExecuteScalarAsync<int>(sql, parameters, transaction);
+                transaction.Commit();
+                return newId;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+        else
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+            return await connection.ExecuteScalarAsync<int>(sql, parameters);
+        }
     }
 
     /// <summary>
@@ -32,12 +57,37 @@ public class DapperRepository(IDatabaseResolver databaseResolver) : IDapperRepos
     /// <param name="dbName">The name of the database. The system will use this to retrieve the connection string and database type from appsettings.</param>
     /// <param name="tableName">The name of the table to update.</param>
     /// <param name="keyColumn">The primary key column used to identify the record (default is "Id").</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected.</returns>
-    public async Task<int> UpdateAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id")
+    public async Task<int> UpdateAsync<T>(T model, string dbName, string tableName, string keyColumn = "Id", bool transactionOn = false)
     {
         var (sql, parameters) = SqlBuilder.BuildUpdate(model, tableName, _databaseResolver.GetDatabaseType(dbName), keyColumn);
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.ExecuteAsync(sql, parameters);
+        if (transactionOn)
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+            connection.Open();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                int rows = await connection.ExecuteAsync(sql, parameters, transaction);
+                transaction.Commit();
+                return rows;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+        else
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+            return await connection.ExecuteAsync(sql, parameters);
+        }
     }
 
     /// <summary>
@@ -47,12 +97,37 @@ public class DapperRepository(IDatabaseResolver databaseResolver) : IDapperRepos
     /// <param name="dbName">The name of the database. The system will use this to retrieve the connection string and database type from appsettings.</param>
     /// <param name="tableName">The name of the table from which to delete the record.</param>
     /// <param name="keyColumn">The primary key column used to identify the record (default is "Id").</param>
+    /// <param name="transactionOn">
+    /// If true, the operation will be executed inside a database transaction (commit/rollback handled automatically).
+    /// If false, the operation executes normally without a transaction.
+    /// </param>
     /// <returns>The number of rows affected.</returns>
-    public async Task<int> DeleteAsync(object id, string dbName, string tableName, string keyColumn = "Id")
+    public async Task<int> DeleteAsync(object id, string dbName, string tableName, string keyColumn = "Id", bool transactionOn = false)
     {
         string sql = SqlBuilder.BuildDelete(tableName, _databaseResolver.GetDatabaseType(dbName), keyColumn);
-        using var connection = _databaseResolver.GetConnection(dbName);
-        return await connection.ExecuteAsync(sql, new { Id = id });
+        if (transactionOn)
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+            connection.Open();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                int rows = await connection.ExecuteAsync(sql, new { Id = id }, transaction);
+                transaction.Commit();
+                return rows;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+        else
+        {
+            using var connection = _databaseResolver.GetConnection(dbName);
+            return await connection.ExecuteAsync(sql, new { Id = id });
+        }
     }
 
     /// <summary>
