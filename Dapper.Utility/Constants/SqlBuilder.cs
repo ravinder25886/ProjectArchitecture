@@ -54,7 +54,7 @@ public static class SqlBuilder
         {
             DatabaseType.SqlServer => $"[{name}]",
             DatabaseType.MySql => $"`{name}`",
-            DatabaseType.PostgreSql => $"\"{name}\"",
+            DatabaseType.PostgreSql => $"\"{name.ToLower()}\"",
             _ => name,
         };
     }
